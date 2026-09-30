@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<title>Dünya Saati + Kur</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --card-hover:#243349; --line:#2a3a55;
+    --ink:#e8eefc; --muted:#7a8aa8; --accent:#22d3ee; --accent-soft:rgba(34,211,238,.12);
+    --accent-line:rgba(34,211,238,.35); --gold:#fbbf24; --violet:#a78bfa;
+    --pos:#fbbf24; --neg:#7dd3fc; --zero:#4ade80;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;overflow-x:hidden}
+  body{
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.4;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+    padding:22px 14px 80px; position:relative;
+  }
+  .stars{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0}
+  .stars i{
+    position:absolute; top:-10vh; width:2px; height:2px; background:#fff;
+    border-radius:50%; opacity:0; box-shadow:0 0 6px rgba(180,220,255,.8);
+    animation:fall linear infinite; will-change:transform, opacity;
+  }
+  .stars i.big{width:3px; height:3px; box-shadow:0 0 10px rgba(190,230,255,.9)}
+  .stars i.cyan{background:#a5f3fc; box-shadow:0 0 8px rgba(34,211,238,.9)}
+  .stars i.violet{background:#ddd6fe; box-shadow:0 0 8px rgba(167,139,250,.9)}
+  .stars i.gold{background:#fde68a; box-shadow:0 0 8px rgba(251,191,36,.9)}
+  @keyframes fall{
+    0%{ transform:translate3d(0, -10vh, 0); opacity:0 }
+    10%{ opacity:1 } 90%{ opacity:1 }
+    100%{ transform:translate3d(var(--dx, 0px), 110vh, 0); opacity:0 }
+  }
+  body::before{
+    content:""; position:fixed; inset:0;
+    background:radial-gradient(600px 400px at 15% 10%, rgba(34,211,238,.07), transparent 70%),
+               radial-gradient(700px 500px at 85% 90%, rgba(167,139,250,.08), transparent 70%);
+    pointer-events:none; z-index:0;
+  }
+  .wrap{max-width:980px; margin:0 auto; position:relative; z-index:1}
+  header{margin-bottom:22px}
+  .top{display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; justify-content:space-between}
+  .brand{display:flex; align-items:center; gap:14px; min-width:0}
+  .globe-badge{
+    width:56px; height:56px; display:grid; place-items:center; border-radius:14px;
+    background:linear-gradient(135deg, rgba(34,211,238,.15), rgba(167,139,250,.15));
+    border:1px solid var(--accent-line); font-size:1.7rem; flex-shrink:0;
+    box-shadow:0 4px 20px rgba(34,211,238,.15), inset 0 0 20px rgba(34,211,238,.05);
+  }
+  h1{margin:0; font-size:1.7rem; font-weight:800; letter-spacing:-.02em; color:#fff;
+     display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  h1 .deco{color:var(--accent); font-weight:400; opacity:.75}
+  #sub{margin:3px 0 0; color:var(--muted); font-size:.9rem}
+  .mine{display:flex; flex-direction:column; gap:10px; min-width:240px}
+  .lang-wrap{
+    position:relative; border-radius:14px;
+    background:linear-gradient(135deg, rgba(34,211,238,.12), rgba(167,139,250,.14));
+    padding:1.5px; box-shadow:0 4px 20px rgba(34,211,238,.18);
+  }
+  .lang-inner{position:relative; display:flex; align-items:center; gap:12px;
+    padding:11px 14px; background:#141f38; border-radius:12.5px}
+  .lang-globe{font-size:1.4rem; line-height:1; color:var(--accent); flex-shrink:0}
+  .lang-text{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+  .lang-label{font-size:.66rem; text-transform:uppercase; letter-spacing:.15em;
+    color:var(--accent); font-weight:800}
+  #langName{font-size:.98rem; font-weight:700; color:#fff; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis}
+  .lang-chevrons{display:flex; flex-direction:column; line-height:.7;
+    color:var(--accent); font-size:.7rem; flex-shrink:0}
+  .lang-chevrons span:first-child{opacity:.4}
+  .lang-chevrons span:last-child{opacity:1}
+  #lang{position:absolute; inset:0; width:100%; height:100%; opacity:0;
+    cursor:pointer; font-size:16px}
+  .clock-box{padding:11px 14px; border-radius:14px; background:var(--card);
+    border:1px solid var(--line); display:flex; align-items:center; gap:12px}
+  .clock-icon{width:38px; height:38px; display:grid; place-items:center;
+    border-radius:10px; background:var(--accent-soft); color:var(--accent);
+    font-size:1.15rem; flex-shrink:0}
+  .clock-text{flex:1; min-width:0; text-align:end}
+  .mine .zone{font-size:.68rem; color:var(--muted); text-transform:uppercase;
+    letter-spacing:.08em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .mine .time{font-size:1.55rem; font-weight:800; color:var(--accent);
+    font-variant-numeric:tabular-nums; direction:ltr; letter-spacing:-.01em; line-height:1.1}
+
+  /* ============ 💱 KUR KUTUSU ============ */
+  .fx-box{margin-top:22px; padding:16px; border-radius:16px; background:var(--card); border:1px solid var(--line)}
+  .fx-head{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap}
+  .fx-head .fx-title{font-size:.78rem; font-weight:800; color:var(--accent);
+    text-transform:uppercase; letter-spacing:.12em; display:flex; align-items:center; gap:6px}
+  .fx-head .fx-updated{font-size:.72rem; color:var(--muted); margin-inline-start:auto}
+  .fx-grid{display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:end}
+  @media (max-width:520px){ .fx-grid{grid-template-columns:1fr} .fx-swap{justify-self:center} }
+  .fx-grid > div{display:flex; flex-direction:column; gap:6px}
+  .fx-grid label{font-size:.7rem; font-weight:800; color:var(--accent);
+    text-transform:uppercase; letter-spacing:.1em; display:flex; align-items:center; gap:5px}
+  .fx-grid input, .fx-grid select{
+    width:100%; padding:11px 14px; font-size:.98rem; font-family:inherit;
+    color:var(--ink); background:#0d1628; border:1px solid var(--line);
+    border-radius:10px; transition:border-color .15s, box-shadow .15s;
+    appearance:none; -webkit-appearance:none;
+  }
+  .fx-grid select{
+    background-image:linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+      linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+    background-position:calc(100% - 18px) calc(50% - 2px), calc(100% - 13px) calc(50% - 2px);
+    background-size:5px 5px, 5px 5px; background-repeat:no-repeat;
+    padding-inline-end:38px; cursor:pointer;
+  }
+  .fx-grid input:focus, .fx-grid select:focus{
+    outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(34,211,238,.15);
+  }
+  .fx-grid input[type=number]{direction:ltr; font-variant-numeric:tabular-nums}
+  .fx-swap{
+    width:42px; height:42px; border-radius:50%; border:1px solid var(--line);
+    background:#0d1628; color:var(--accent); font-size:1.1rem; cursor:pointer;
+    display:grid; place-items:center; transition:transform .2s, border-color .15s;
+  }
+  .fx-swap:hover{border-color:var(--accent); transform:rotate(180deg)}
+  .fx-result{
+    margin-top:12px; padding:14px 16px; border-radius:12px;
+    background:rgba(34,211,238,.08); border:1px solid var(--accent-line);
+    display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+  }
+  .fx-result .eq{font-size:.9rem; color:var(--muted)}
+  .fx-result .big{font-size:1.5rem; font-weight:800; color:var(--accent);
+    font-variant-numeric:tabular-nums; direction:ltr}
+  .fx-result .rate-note{font-size:.72rem; color:var(--muted);
+    margin-inline-start:auto; text-align:end}
+  .fx-status{font-size:.75rem; color:var(--muted); margin-top:8px}
+  .fx-status.err{color:#f87171}
+
+  .controls{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;
+    margin-top:22px; padding:14px; border-radius:16px; background:var(--card);
+    border:1px solid var(--line)}
+  @media (max-width:640px){ .controls{grid-template-columns:1fr; padding:12px} }
+  .controls > div{display:flex; flex-direction:column; gap:6px}
+  .controls label{font-size:.7rem; font-weight:800; color:var(--accent);
+    text-transform:uppercase; letter-spacing:.1em; display:flex; align-items:center; gap:6px}
+  .controls label .ico{font-size:.95rem; filter:drop-shadow(0 0 6px rgba(34,211,238,.5))}
+  .controls input, .controls select{
+    width:100%; padding:11px 14px; font-size:.98rem; font-family:inherit;
+    color:var(--ink); background:#0d1628; border:1px solid var(--line);
+    border-radius:10px; transition:border-color .15s, box-shadow .15s;
+    appearance:none; -webkit-appearance:none;
+  }
+  .controls select{
+    background-image:linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+      linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+    background-position:calc(100% - 18px) calc(50% - 2px), calc(100% - 13px) calc(50% - 2px);
+    background-size:5px 5px, 5px 5px; background-repeat:no-repeat;
+    padding-inline-end:38px; cursor:pointer;
+  }
+  .controls input:focus, .controls select:focus{
+    outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(34,211,238,.15);
+  }
+  .controls input::placeholder{color:var(--muted)}
+
+  #hint{font-size:.78rem; color:var(--muted); margin:12px 4px 0;
+    display:flex; flex-wrap:wrap; align-items:center; gap:6px}
+  .kbd{display:inline-block; padding:2px 7px; border:1px solid var(--line);
+    border-radius:5px; background:#0d1628; font-family:ui-monospace, monospace;
+    font-size:.75em; color:var(--accent); font-weight:700}
+  .hint-sep{opacity:.35}
+
+  #count{margin:20px 4px 12px; font-size:.88rem; color:var(--muted);
+    font-weight:600; display:flex; align-items:center; gap:8px}
+  #count::before{content:""; width:6px; height:6px; border-radius:50%;
+    background:var(--accent); box-shadow:0 0 10px var(--accent); flex-shrink:0}
+  #count b{color:#fff; font-weight:800}
+
+  #board{display:flex; flex-direction:column; gap:10px}
+  .row{
+    display:grid; grid-template-columns:1.6fr 1fr auto; gap:14px;
+    align-items:center; padding:14px 16px; border-radius:14px;
+    background:var(--card); border:1px solid var(--line); cursor:pointer;
+    position:relative; overflow:hidden;
+    transition:background-color .15s ease, border-color .15s ease, transform .12s ease;
+  }
+  .row::before{content:""; position:absolute; top:12px; bottom:12px;
+    inset-inline-start:0; width:3px; border-start-end-radius:3px;
+    border-end-end-radius:3px; background:var(--accent); opacity:.45;
+    transition:opacity .15s ease}
+  .row:hover{background:var(--card-hover); border-color:var(--accent-line); transform:translateY(-1px)}
+  .row:hover::before{opacity:1}
+  .row.sel{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft), 0 8px 24px rgba(34,211,238,.15); background:var(--card-hover)}
+  .row.sel::before{opacity:1; width:4px}
+  .who{display:flex; align-items:center; gap:12px; min-width:0}
+  .flag{font-size:1.85rem; line-height:1; flex-shrink:0;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
+  .cn{font-weight:700; font-size:1.02rem; white-space:nowrap; overflow:hidden;
+    text-overflow:ellipsis; color:#fff}
+  .zone{font-size:.72rem; color:var(--muted); white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; text-transform:uppercase;
+    letter-spacing:.05em; display:flex; align-items:center; gap:5px}
+  .zone::before{content:"◦"; color:var(--accent); opacity:.6}
+  .time{display:flex; flex-direction:column; align-items:center; gap:2px}
+  .t{font-size:1.8rem; font-weight:800; color:var(--accent);
+    font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:isolate;
+    letter-spacing:-.01em; transition:transform .12s ease}
+  .row.sel .t{transform:scale(1.04)}
+  .dn{font-size:.9rem; line-height:1}
+  .dn.day{color:var(--gold); text-shadow:0 0 8px rgba(251,191,36,.5)}
+  .dn.night{color:#8ba3c9; text-shadow:0 0 8px rgba(139,163,201,.4)}
+  .meta{display:flex; flex-direction:column; align-items:flex-end; gap:4px; text-align:end}
+  .dt{font-size:.76rem; color:var(--muted); display:flex; align-items:center; gap:5px}
+  .dt::before{content:"🗓"; font-size:.85em; opacity:.7; filter:grayscale(.3)}
+  .off{font-size:.78rem; font-weight:700; font-variant-numeric:tabular-nums;
+    padding:3px 9px; border-radius:999px; border:1px solid;
+    display:inline-flex; align-items:center; gap:4px; white-space:nowrap}
+  .off::before{content:""; width:5px; height:5px; border-radius:50%;
+    background:currentColor; box-shadow:0 0 6px currentColor}
+  .off.pos{color:var(--pos); background:rgba(251,191,36,.08); border-color:rgba(251,191,36,.3)}
+  .off.neg{color:var(--neg); background:rgba(125,211,252,.08); border-color:rgba(125,211,252,.3)}
+  .off.zero{color:var(--zero); background:rgba(74,222,128,.08); border-color:rgba(74,222,128,.3)}
+  .empty{padding:48px 20px; text-align:center; color:var(--muted);
+    background:var(--card); border:1px solid var(--line); border-radius:14px; font-size:.98rem}
+  .empty::before{content:"🛰"; display:block; font-size:2rem; margin-bottom:10px; opacity:.7}
+  .toast{
+    position:fixed; inset-inline:0; bottom:28px; margin:auto; width:max-content;
+    max-width:90vw; padding:11px 20px; border-radius:999px; background:#141f38;
+    border:1px solid var(--accent-line); color:#fff; font-weight:700; font-size:.88rem;
+    box-shadow:0 12px 40px rgba(0,0,0,.5), 0 0 24px rgba(34,211,238,.2);
+    opacity:0; transform:translateY(16px); transition:opacity .22s, transform .22s;
+    pointer-events:none; z-index:100; display:flex; align-items:center; gap:8px;
+  }
+  .toast::before{content:"✦"; color:var(--accent)}
+  .toast.on{opacity:1; transform:translateY(0)}
+
+  @media (max-width:560px){
+    body{padding:16px 10px 60px}
+    h1{font-size:1.4rem}
+    .globe-badge{width:48px; height:48px; font-size:1.5rem}
+    .mine{min-width:100%; width:100%}
+    .mine .time{font-size:1.35rem}
+    .row{grid-template-columns:1fr auto; gap:10px; padding:13px 14px}
+    .time{grid-column:1; grid-row:2; flex-direction:row; gap:8px;
+      align-items:baseline; justify-content:flex-start}
+    .meta{grid-column:2; grid-row:1 / span 2}
+    .t{font-size:1.45rem}
+    .flag{font-size:1.6rem}
+    .cn{font-size:.98rem}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important; animation-iteration-count:1 !important;
+      transition-duration:.01ms !important}
+    .stars i{animation:none !important; opacity:.35 !important; top:auto !important}
+    .stars i:nth-child(1){top:12%;left:8%} .stars i:nth-child(2){top:28%;left:22%}
+    .stars i:nth-child(3){top:44%;left:38%} .stars i:nth-child(4){top:60%;left:54%}
+    .stars i:nth-child(5){top:76%;left:70%} .stars i:nth-child(6){top:18%;left:86%}
+    .stars i:nth-child(7){top:52%;left:12%} .stars i:nth-child(8){top:88%;left:44%}
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" aria-hidden="true"></div>
+
+<div class="wrap">
+
+  <header>
+    <div class="top">
+      <div class="brand">
+        <div class="globe-badge" aria-hidden="true">🌍</div>
+        <div style="min-width:0">
+          <h1 id="ttl">Dünya Saati <span class="deco">✦</span></h1>
+          <p id="sub">Tüm ülkelerin yerel saati tek sayfada.</p>
+        </div>
+      </div>
+      <div class="mine">
+        <div class="lang-wrap">
+          <div class="lang-inner">
+            <span class="lang-globe" aria-hidden="true">🌐</span>
+            <div class="lang-text">
+              <span class="lang-label" id="langLabel">Dil / Language</span>
+              <span id="langName">🇹🇷  Türkçe</span>
+            </div>
+            <div class="lang-chevrons" aria-hidden="true"><span>▲</span><span>▼</span></div>
+            <select id="lang" aria-label="Dil seçici"></select>
+          </div>
+        </div>
+        <div class="clock-box">
+          <div class="clock-icon" aria-hidden="true">⏰</div>
+          <div class="clock-text">
+            <div class="zone" id="myZone">Sizin saatiniz</div>
+            <div class="time" id="myTime">--:--:--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fx-box">
+      <div class="fx-head">
+        <div class="fx-title"><span>💱</span> <span id="fxTitle">Kur Çevirici</span></div>
+        <div class="fx-updated" id="fxUpdated">Yükleniyor…</div>
+      </div>
+      <div class="fx-grid">
+        <div>
+          <label for="fxAmount"><span>💵</span> <span id="fxLblAmount">Miktar</span></label>
+          <input id="fxAmount" type="number" inputmode="decimal" value="100" min="0" step="any">
+        </div>
+        <div>
+          <label for="fxFrom"><span>🔽</span> <span id="fxLblFrom">Kaynak</span></label>
+          <select id="fxFrom"></select>
+        </div>
+        <button type="button" class="fx-swap" id="fxSwap" title="Takas et" aria-label="Takas et">⇄</button>
+        <div>
+          <label for="fxTo"><span>🔼</span> <span id="fxLblTo">Hedef</span></label>
+          <select id="fxTo"></select>
+        </div>
+      </div>
+      <div class="fx-result" id="fxResultBox">
+        <span class="eq" id="fxEq">100 USD =</span>
+        <span class="big" id="fxResult">—</span>
+        <span class="rate-note" id="fxRate">—</span>
+      </div>
+      <div class="fx-status" id="fxStatus"></div>
+    </div>
+
+    <div class="controls">
+      <div>
+        <label id="lblQ" for="q"><span class="ico">🔍</span> Ara</label>
+        <input id="q" type="search" placeholder="ör. Japonya, Tokyo" autocomplete="off" spellcheck="false">
+      </div>
+      <div>
+        <label id="lblSort" for="sort"><span class="ico">⇅</span> Sıralama</label>
+        <select id="sort">
+          <option id="optName" value="name">Ülke adına göre</option>
+          <option id="optTime" value="time">Saate göre (batıdan doğuya)</option>
+          <option id="optDiff" value="diff">Sizden fark (yakından uzağa)</option>
+        </select>
+      </div>
+      <div>
+        <label id="lblFilter" for="filter"><span class="ico">◎</span> Filtre</label>
+        <select id="filter">
+          <option id="fAll" value="all">Tümü</option>
+          <option id="fSame" value="same">Aynı gün içinde</option>
+          <option id="fAhead" value="ahead">Benden ileride (+)</option>
+          <option id="fBehind" value="behind">Benden geride (−)</option>
+        </select>
+      </div>
+    </div>
+
+    <p id="hint"></p>
+  </header>
+
+  <div id="count"></div>
+  <div id="board"></div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============ ✨ YILDIZLAR ============ */
+  (function buildStars() {
+    var container = document.querySelector(".stars");
+    if (!container) return;
+    var reduce = false;
+    try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    if (reduce) { for (var r = 0; r < 8; r++) container.appendChild(document.createElement("i")); return; }
+    var w = window.innerWidth || 800;
+    var count = w < 480 ? 18 : (w < 900 ? 26 : 36);
+    var colors = ["", "", "", "", "cyan", "cyan", "violet", "gold"];
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < count; i++) {
+      var el = document.createElement("i");
+      var rnd = Math.random();
+      if (rnd < 0.15) el.className = "big";
+      var c = colors[Math.floor(Math.random() * colors.length)];
+      if (c) el.className = (el.className ? el.className + " " : "") + c;
+      el.style.left = (Math.random() * 100) + "%";
+      var dur = 6 + Math.random() * 10;
+      el.style.animationDuration = dur + "s";
+      el.style.animationDelay = (-Math.random() * dur) + "s";
+      el.style.setProperty("--dx", ((Math.random() - 0.5) * 30) + "px");
+      frag.appendChild(el);
+    }
+    container.appendChild(frag);
+  })();
+
+  /* ============ VERİ ============ */
+  var DATA = "TR Europe/Istanbul;US America/New_York;GB Europe/London;DE Europe/Berlin;FR Europe/Paris;IT Europe/Rome;ES Europe/Madrid;RU Europe/Moscow;CN Asia/Shanghai;JP Asia/Tokyo;KR Asia/Seoul;IN Asia/Kolkata;PK Asia/Karachi;IR Asia/Tehran;SA Asia/Riyadh;AE Asia/Dubai;EG Africa/Cairo;ZA Africa/Johannesburg;NG Africa/Lagos;KE Africa/Nairobi;BR America/Sao_Paulo;AR America/Argentina/Buenos_Aires;MX America/Mexico_City;CA America/Toronto;AU Australia/Sydney;NZ Pacific/Auckland;ID Asia/Jakarta;TH Asia/Bangkok;VN Asia/Ho_Chi_Minh;MY Asia/Kuala_Lumpur;SG Asia/Singapore;PH Asia/Manila;UA Europe/Kyiv;PL Europe/Warsaw;NL Europe/Amsterdam;BE Europe/Brussels;SE Europe/Stockholm;NO Europe/Oslo;DK Europe/Copenhagen;FI Europe/Helsinki;GR Europe/Athens;PT Europe/Lisbon;CH Europe/Zurich;AT Europe/Vienna;CZ Europe/Prague;HU Europe/Budapest;RO Europe/Bucharest;BG Europe/Sofia;RS Europe/Belgrade;HR Europe/Zagreb;SK Europe/Bratislava;SI Europe/Ljubljana;LT Europe/Vilnius;LV Europe/Riga;EE Europe/Tallinn;IE Europe/Dublin;IS Atlantic/Reykjavik;IL Asia/Jerusalem;JO Asia/Amman;LB Asia/Beirut;IQ Asia/Baghdad;KW Asia/Kuwait;QA Asia/Qatar;OM Asia/Muscat;BH Asia/Bahrain;YE Asia/Aden;SY Asia/Damascus;AF Asia/Kabul;BD Asia/Dhaka;LK Asia/Colombo;NP Asia/Kathmandu;MM Asia/Yangon;KH Asia/Phnom_Penh;LA Asia/Vientiane;MN Asia/Ulaanbaatar;KZ Asia/Almaty;UZ Asia/Tashkent;TM Asia/Ashgabat;TJ Asia/Dushanbe;KG Asia/Bishkek;AZ Asia/Baku;AM Asia/Yerevan;GE Asia/Tbilisi;CY Asia/Nicosia;MA Africa/Casablanca;DZ Africa/Algiers;TN Africa/Tunis;LY Africa/Tripoli;SD Africa/Khartoum;ET Africa/Addis_Ababa;SO Africa/Mogadishu;TZ Africa/Dar_es_Salaam;UG Africa/Kampala;GH Africa/Accra;SN Africa/Dakar;CI Africa/Abidjan;CM Africa/Douala;AO Africa/Luanda;MZ Africa/Maputo;ZW Africa/Harare;ZM Africa/Lusaka;BW Africa/Gaborone;NA Africa/Windhoek;MU Indian/Mauritius;MG Indian/Antananarivo;CL America/Santiago;PE America/Lima;CO America/Bogota;VE America/Caracas;EC America/Guayaquil;BO America/La_Paz;PY America/Asuncion;UY America/Montevideo;CU America/Havana;DO America/Santo_Domingo;GT America/Guatemala;CR America/Costa_Rica;PA America/Panama;JM America/Jamaica;TT America/Port_of_Spain;BS America/Nassau;BB America/Barbados;FJ Pacific/Fiji;PG Pacific/Port_Moresby;NC Pacific/Noumea;PF Pacific/Tahiti;WS Pacific/Apia;TO Pacific/Tongatapu;VU Pacific/Efate;SB Pacific/Guadalcanal;GU Pacific/Guam;XK Europe/Belgrade";
+
+  var CURRENCY = {
+    TR:"TRY", US:"USD", GB:"GBP", DE:"EUR", FR:"EUR", IT:"EUR", ES:"EUR", RU:"RUB",
+    CN:"CNY", JP:"JPY", KR:"KRW", IN:"INR", PK:"PKR", IR:"IRR", SA:"SAR", AE:"AED",
+    EG:"EGP", ZA:"ZAR", NG:"NGN", KE:"KES", BR:"BRL", AR:"ARS", MX:"MXN", CA:"CAD",
+    AU:"AUD", NZ:"NZD", ID:"IDR", TH:"THB", VN:"VND", MY:"MYR", SG:"SGD", PH:"PHP",
+    UA:"UAH", PL:"PLN", NL:"EUR", BE:"EUR", SE:"SEK", NO:"NOK", DK:"DKK", FI:"EUR",
+    GR:"EUR", PT:"EUR", CH:"CHF", AT:"EUR", CZ:"CZK", HU:"HUF", RO:"RON", BG:"BGN",
+    RS:"RSD", HR:"EUR", SK:"EUR", SI:"EUR", LT:"EUR", LV:"EUR", EE:"EUR", IE:"EUR",
+    IS:"ISK", IL:"ILS", JO:"JOD", LB:"LBP", IQ:"IQD", KW:"KWD", QA:"QAR", OM:"OMR",
+    BH:"BHD", YE:"YER", SY:"SYP", AF:"AFN", BD:"BDT", LK:"LKR", NP:"NPR", MM:"MMK",
+    KH:"KHR", LA:"LAK", MN:"MNT", KZ:"KZT", UZ:"UZS", TM:"TMT", TJ:"TJS", KG:"KGS",
+    AZ:"AZN", AM:"AMD", GE:"GEL", CY:"EUR", MA:"MAD", DZ:"DZD", TN:"TND", LY:"LYD",
+    SD:"SDG", ET:"ETB", SO:"SOS", TZ:"TZS", UG:"UGX", GH:"GHS", SN:"XOF", CI:"XOF",
+    CM:"XAF", AO:"AOA", MZ:"MZN", ZW:"ZWL", ZM:"ZMW", BW:"BWP", NA:"NAD", MU:"MUR",
+    MG:"MGA", CL:"CLP", PE:"PEN", CO:"COP", VE:"VES", EC:"USD", BO:"BOB", PY:"PYG",
+    UY:"UYU", CU:"CUP", DO:"DOP", GT:"GTQ", CR:"CRC", PA:"PAB", JM:"JMD", TT:"TTD",
+    BS:"BSD", BB:"BBD", FJ:"FJD", PG:"PGK", NC:"XPF", PF:"XPF", WS:"WST", TO:"TOP",
+    VU:"VUV", SB:"SBD", GU:"USD", XK:"EUR"
+  };
+
+  /* ============================================================
+     🌍 DİL SÖZLÜĞÜ — TAM DENETLENMİŞ SÜRÜM
+     - Arapça: gramer düzeltildi (بلدا, يُعرض, آخر تحديث)
+     - Rusça: sayı çekimi sorunu çözüldü (Показано: N — всего: T)
+     - Japonca: ヶ国 sınıflandırıcı, 変換元/変換先
+     - Diğerleri: üslup ve doğallık iyileştirildi
+     ============================================================ */
+  var LANGS = {
+    tr: { name: "Türkçe", flag: "🇹🇷", loc: "tr-TR", base: "tr", dir: "ltr" },
+    en: { name: "English", flag: "🇬🇧", loc: "en-US", base: "en", dir: "ltr" },
+    ar: { name: "العربية", flag: "🇸🇦", loc: "ar-u-nu-latn", base: "ar", dir: "rtl" },
+    ru: { name: "Русский", flag: "🇷🇺", loc: "ru-RU", base: "ru", dir: "ltr" },
+    de: { name: "Deutsch", flag: "🇩🇪", loc: "de-DE", base: "de", dir: "ltr" },
+    zh: { name: "中文", flag: "🇨🇳", loc: "zh-CN", base: "zh", dir: "ltr" },
+    fr: { name: "Français", flag: "🇫🇷", loc: "fr-FR", base: "fr", dir: "ltr" },
+    es: { name: "Español", flag: "🇪🇸", loc: "es-ES", base: "es", dir: "ltr" },
+    ja: { name: "日本語", flag: "🇯🇵", loc: "ja-JP", base: "ja", dir: "ltr" }
+  };
+
+  var T = {
+    /* ---------- 🇹🇷 TÜRKÇE ---------- */
+    tr: {
+      title: "Dünya Saati",
+      sub: "Tüm ülkelerin yerel saati tek sayfada.",
+      yourTime: "Sizin saatiniz",
+      search: "Ara",
+      ph: "ör. Japonya, Tokyo",
+      sort: "Sıralama",
+      byName: "Ülke adına göre",
+      byTime: "Saate göre (batıdan doğuya)",
+      sortDiff: "Sizden fark (yakından uzağa)",
+      filter: "Filtre",
+      fAll: "Tümü",
+      fSame: "Aynı gün içinde",
+      fAhead: "Benden ileride (+)",
+      fBehind: "Benden geride (−)",
+      count: "<b>{n}</b> ülke gösteriliyor (toplam <b>{t}</b>)",
+      none: "Eşleşen ülke bulunamadı.",
+      same: "sizinle aynı saat",
+      diffAhead: "sizden +{d} sa",
+      diffBehind: "sizden −{d} sa",
+      day: "Gündüz",
+      night: "Gece",
+      langLabel: "Dil / Language",
+      hintSearch: "ara",
+      hintNav: "gez",
+      hintCopy: "kopyala",
+      hintEsc: "temizle",
+      fxTitle: "Kur Çevirici",
+      fxAmount: "Miktar",
+      fxFrom: "Kaynak",
+      fxTo: "Hedef",
+      fxUpdated: "Güncellendi: {d}",
+      fxLoading: "Kurlar yükleniyor…",
+      fxError: "Kurlar yüklenemedi",
+      fxOffline: "Çevrimdışı — son bilinen kurlar",
+      fxRate: "1 {a} = {b} {c}"
+    },
+
+    /* ---------- 🇬🇧 ENGLISH ---------- */
+    en: {
+      title: "World Clock",
+      sub: "Local time in every country on one page.",
+      yourTime: "Your time",
+      search: "Search",
+      ph: "e.g. Japan, Tokyo",
+      sort: "Sort",
+      byName: "By country name",
+      byTime: "By time (west to east)",
+      sortDiff: "Difference from you (nearest first)",
+      filter: "Filter",
+      fAll: "All",
+      fSame: "Same calendar day",
+      fAhead: "Ahead of me (+)",
+      fBehind: "Behind me (−)",
+      count: "Showing <b>{n}</b> countries (of <b>{t}</b>)",
+      none: "No matching country found.",
+      same: "same time as you",
+      diffAhead: "{d} h ahead",
+      diffBehind: "{d} h behind",
+      day: "Day",
+      night: "Night",
+      langLabel: "Language",
+      hintSearch: "search",
+      hintNav: "navigate",
+      hintCopy: "copy",
+      hintEsc: "clear",
+      fxTitle: "Currency Converter",
+      fxAmount: "Amount",
+      fxFrom: "From",
+      fxTo: "To",
+      fxUpdated: "Updated: {d}",
+      fxLoading: "Loading rates…",
+      fxError: "Could not load rates",
+      fxOffline: "Offline — last known rates",
+      fxRate: "1 {a} = {b} {c}"
+    },
+
+    /* ---------- 🇸🇦 ARAPÇA (düzeltilmiş) ---------- */
+    ar: {
+      title: "ساعة العالم",
+      sub: "التوقيت المحلي لجميع دول العالم في صفحة واحدة.",
+      yourTime: "توقيتك",
+      search: "ابحث",
+      ph: "مثال: اليابان، طوكيو",
+      sort: "الترتيب",
+      byName: "حسب اسم الدولة",
+      byTime: "حسب الوقت (من الغرب إلى الشرق)",
+      sortDiff: "الفرق عن توقيتك (الأقرب أولاً)",
+      filter: "تصفية",
+      fAll: "الكل",
+      fSame: "في نفس اليوم",
+      fAhead: "متقدم عنك (+)",
+      fBehind: "متأخر عنك (−)",
+      count: "يُعرض <b>{n}</b> بلدًا (من أصل <b>{t}</b>)",
+      none: "لم يتم العثور على أي بلد مطابق.",
+      same: "نفس توقيتك",
+      diffAhead: "متقدم بـ {d}",
+      diffBehind: "متأخر بـ {d}",
+      day: "نهار",
+      night: "ليل",
+      langLabel: "اللغة",
+      hintSearch: "ابحث",
+      hintNav: "تنقّل",
+      hintCopy: "انسخ",
+      hintEsc: "امسح",
+      fxTitle: "محوّل العملات",
+      fxAmount: "المبلغ",
+      fxFrom: "من",
+      fxTo: "إلى",
+      fxUpdated: "آخر تحديث: {d}",
+      fxLoading: "جارٍ تحميل الأسعار…",
+      fxError: "تعذّر تحميل الأسعار",
+      fxOffline: "غير متصل — آخر أسعار معروفة",
+      fxRate: "1 {a} = {b} {c}"
+    },
+
+    /* ---------- 🇷🇺 RUSÇA (sayı çekimi çözüldü) ---------- */
+    ru: {
+      title: "Мировое время",
+      sub: "Местное время всех стран на одной странице.",
+      yourTime: "Ваше время",
+      search: "Поиск",
+      ph: "например: Япония, Токио",
+      sort: "Сортировка",
+      byName: "По названию страны",
+      byTime: "По времени (с запада на восток)",
+      sortDiff: "Разница с вами (ближайшие первыми)",
+      filter: "Фильтр",
+      fAll: "Все",
+      fSame: "Тот же день",
+      fAhead: "Впереди вас (+)",
+      fBehind: "Позади вас (−)",
+      count: "Показано: <b>{n}</b> (всего: <b>{t}</b>)",
+      none: "Страна не найдена.",
+      same: "то же время, что у вас",
+      diffAhead: "на {d} впереди",
+      diffBehind: "на {d} позади",
+      day: "День",
+      night: "Ночь",
+      langLabel: "Язык",
+      hintSearch: "поиск",
+      hintNav: "навигация",
+      hintCopy: "копировать",
+      hintEsc: "очистить",
+      fxTitle: "Конвертер валют",
+      fxAmount: "Сумма",
+      fxFrom: "Из",
+      fxTo: "В",
+      fxUpdated: "Обновлено: {d}",
+      fxLoading: "Загрузка курсов…",
+      fxError: "Не удалось загрузить курсы",
+      fxOffline: "Офлайн — последние известные курсы",
+      fxRate: "1 {a} = {b} {c}"
+    },
+
+    /* ---------- 🇩🇪 ALMANCA (üslup iyileştirildi) ---------- */
+    de: {
+      title: "Weltzeituhr",
+      sub: "Die Ortszeit aller Länder auf einer Seite.",
+      yourTime: "Ihre Zeit",
+      search: "Suche",
+      ph: "z. B. Japan, Tokio",
+      sort: "Sortierung",
+      byName: "Nach Ländername",
+      byTime: "Nach Zeit (West nach Ost)",
+      sortDiff: "Nach Abweichung von Ihnen",
+      filter: "Filter",
+      fAll: "Alle",
+      fSame: "Gleicher Kalendertag",
+      fAhead: "Vor Ihnen (+)",
+      fBehind: "Hinter Ihnen (−)",
+      count: "<b>{n}</b> Länder angezeigt (von <b>{t}</b>)",
+      none: "Kein Land gefunden.",
+      same: "gleiche Zeit wie Sie",
+      diffAhead: "{d} Std. voraus",
+      diffBehind: "{d} Std. zurück",
+      day: "Tag",
+      night: "Nacht",
+      langLabel: "Sprache",
+      hintSearch: "suchen",
+      hintNav: "navigieren",
+      hintCopy: "kopieren",
+      hintEsc: "leeren",
+      fxTitle: "Währungsrechner",
+      fxAmount: "Betrag",
+      fxFrom: "Von",
+      fxTo: "Nach",
+      fxUpdated: "Aktualisiert: {d}",
+      fxLoading: "Kurse werden geladen…",
+      fxError: "Kurse konnten nicht geladen werden",
+      fxOffline: "Offline — letzte bekannte Kurse",
+      fxRate: "1 {a} = {b} {c}"
+    },
+
+    /* ---------- 🇨🇳 ÇİNCE ---------- */
+    zh: {
+      title: "世界时钟",
+      sub: "在一个页面查看所有国家的当地时间。",
+      yourTime: "您的时间",
+      search: "搜索",
+      ph: "例如：日本、东京",
+      sort: "排序",
+      byName: "按国家名称",
+      byTime: "按时间（自西向东）",
+      sortDiff: "与您的时差（由近到远）",
+      filter: "筛选",
+      fAll: "全部",
+      fSame: "同一天内",
+      fAhead: "比您快 (+)",
+      fBehind: "比您慢 (−)",
+      count: "显示 <b>{n}</b> 个国家（共 <b>{t}</b> 个）",
+      none: "未找到匹配的国家。",
+      same: "与您时间相同",
+      diffAhead: "比您快 {d}",
+      diffBehind: "比您慢 {d}",
+      day: "白天",
+      night: "夜晚",
+      langLabel: "语言",
+      hintSearch: "搜索",
+      hintNav: "导航",
+      hintCopy: "复制",
+      hintEsc: "清除",
+      fxTitle: "货币转换器",
+      fxAmount: "金额",
+      fxFrom: "从",
+      fxTo: "到",
+      fxUpdated: "更新于 {d}",
+      fxLoading: "正在加载汇率…",
+      fxError: "无法加载汇率",
+      fxOffline: "离线 — 最后的已知汇率",
+      fxRate: "1 {a} = {b} {c}"
+    },
+
+    /* ---------- 🇫🇷 FRANSIZCA ---------- */
+    fr: {
+      title: "Heure mondiale",
+      sub: "L'heure locale de tous les pays sur une seule page.",
+      yourTime: "Votre heure",
+      search: "Rechercher",
+      ph: "ex. Japon, Tokyo",
+      sort: "Tri",
+      byName: "Par nom de pays",
+      byTime: "Par heure (d'ouest en est)",
+      sortDiff: "Par écart avec vous",
+      filter: "Filtre",
+      fAll: "Tous",
+      fSame: "Même jour civil",
+      fAhead: "En avance sur vous (+)",
+      fBehind: "En retard sur vous (−)",
+      count: "<b>{n}</b> pays affichés (sur <b>{t}</b>)",
+      none: "Aucun pays correspondant.",
+      same: "même heure que vous",
+      diffAhead: "{d} h d'avance",
+      diffBehind: "{d} h de retard",
+      day: "Jour",
+      night: "Nuit",
+      langLabel: "Langue",
+      hintSearch: "rechercher",
+      hintNav: "naviguer",
+      hintCopy: "copier",
+      hintEsc: "effacer",
+      fxTitle: "Convertisseur de devises",
+      fxAmount: "Montant",
+      fxFrom: "De",
+      fxTo: "Vers",
+      fxUpdated: "Mis à jour : {d}",
+      fxLoading: "Chargement des taux…",
+      fxError: "Échec du chargement des taux",
+      fxOffline: "Hors ligne — derniers taux connus",
+      fxRate: "1 {a} = {b} {c}"
+    },
+
+    /* ---------- 🇪🇸 İSPANYOLCA ---------- */
+    es: {
+      title: "Hora mundial",
+      sub: "La hora local de todos los países en una sola página.",
+      yourTime: "Su hora",
+      search: "Buscar",
+      ph: "p. ej. Japón, Tokio",
+      sort: "Orden",
+      byName: "Por nombre de país",
+      byTime: "Por hora (de oeste a este)",
+      sortDiff: "Por diferencia con usted",
+      filter: "Filtro",
+      fAll: "Todos",
+      fSame: "Mismo día natural",
+      fAhead: "Por delante de usted (+)",
+      fBehind: "Por detrás de usted (−)",
+      count: "Mostrando <b>{n}</b> países (de <b>{t}</b>)",
+      none: "No se encontró ningún país.",
+      same: "misma hora que usted",
+      diffAhead: "{d} h por delante",
+      diffBehind: "{d} h por detrás",
+      day: "Día",
+      night: "Noche",
+      langLabel: "Idioma",
+      hintSearch: "buscar",
+      hintNav: "navegar",
+      hintCopy: "copiar",
+      hintEsc: "limpiar",
+      fxTitle: "Conversor de divisas",
+      fxAmount: "Cantidad",
+      fxFrom: "De",
+      fxTo: "A",
+      fxUpdated: "Actualizado: {d}",
+      fxLoading: "Cargando tasas…",
+      fxError: "No se pudieron cargar las tasas",
+      fxOffline: "Sin conexión — últimas tasas conocidas",
+      fxRate: "1 {a} = {b} {c}"
+    },
+
+    /* ---------- 🇯🇵 JAPONCA (ヶ国 + doğal ifadeler) ---------- */
+    ja: {
+      title: "世界時計",
+      sub: "すべての国の現地時間を1ページで確認できます。",
+      yourTime: "あなたの現地時間",
+      search: "検索",
+      ph: "例：日本、東京",
+      sort: "並べ替え",
+      byName: "国名順",
+      byTime: "時刻順（西から東へ）",
+      sortDiff: "あなたとの時差（近い順）",
+      filter: "フィルター",
+      fAll: "すべて",
+      fSame: "同じ日付",
+      fAhead: "あなたより進んでいる (+)",
+      fBehind: "あなたより遅れている (−)",
+      count: "<b>{n}</b> ヶ国を表示中（全 <b>{t}</b> ヶ国）",
+      none: "該当する国が見つかりません。",
+      same: "あなたと同じ時刻",
+      diffAhead: "{d} 進んでいます",
+      diffBehind: "{d} 遅れています",
+      day: "昼",
+      night: "夜",
+      langLabel: "言語",
+      hintSearch: "検索",
+      hintNav: "移動",
+      hintCopy: "コピー",
+      hintEsc: "クリア",
+      fxTitle: "通貨換算",
+      fxAmount: "金額",
+      fxFrom: "変換元",
+      fxTo: "変換先",
+      fxUpdated: "更新日時: {d}",
+      fxLoading: "レートを読み込み中…",
+      fxError: "レートを読み込めませんでした",
+      fxOffline: "オフライン — 最後に取得したレート",
+      fxRate: "1 {a} = {b} {c}"
+    }
+  };
+
+  var KOSOVO = { tr: "Kosova", en: "Kosovo", ar: "كوسوفو", ru: "Косово", de: "Kosovo", zh: "科索沃", fr: "Kosovo", es: "Kosovo", ja: "コソボ" };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var L = LANGS.tr, t = T.tr;
+  var dnCur = null;
+
+  function displayNames(base) {
+    try { return new Intl.DisplayNames([base], { type: "region" }); } catch (e) { return null; }
+  }
+  function nameIn(dn, base, code) {
+    var n = "";
+    try { n = dn ? dn.of(code) : ""; } catch (e) { n = ""; }
+    if (!n || n === code) n = code === "XK" ? KOSOVO[base] : code;
+    return n;
+  }
+  function flagOf(code) {
+    if (code === "XK") return "🇽🇰";
+    return String.fromCodePoint.apply(null, code.split("").map(function (c) { return 0x1F1E6 + c.charCodeAt(0) - 65; }));
+  }
+  function norm(s) { return (s || "").toLocaleLowerCase(L.loc); }
+  function fill(str, map) { return str.replace(/\{(\w+)\}/g, function (_, k) { return map[k]; }); }
+
+  /* ============================================================
+     💱 KUR MOTORU
+     ============================================================ */
+  var FX = {
+    base: "usd",
+    rates: null,
+    date: null,
+    loaded: false,
+    loading: false,
+    cacheKey: "dunya-saati-fx-v1",
+    ttl: 12 * 60 * 60 * 1000,
+    urls: [
+      "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json",
+      "https://latest.currency-api.pages.dev/v1/currencies/usd.min.json"
+    ],
+
+    load: function (cb) {
+      var cached = null;
+      try {
+        var raw = localStorage.getItem(this.cacheKey);
+        if (raw) {
+          var obj = JSON.parse(raw);
+          if (obj && obj.rates && (Date.now() - obj.ts) < this.ttl) {
+            this.rates = obj.rates;
+            this.date = obj.date;
+            this.loaded = true;
+            if (cb) cb(null, this);
+            return;
+          }
+          if (obj && obj.rates) cached = obj;
+        }
+      } catch (e) {}
+
+      if (this.loading) return;
+      this.loading = true;
+      this.fetchNext(0, cached, cb);
+    },
+
+    fetchNext: function (idx, cachedFallback, cb) {
+      var self = this;
+      if (idx >= this.urls.length) {
+        this.loading = false;
+        if (cachedFallback) {
+          self.rates = cachedFallback.rates;
+          self.date = cachedFallback.date;
+          self.loaded = true;
+          if (cb) cb("offline", self);
+        } else {
+          if (cb) cb("error", null);
+        }
+        return;
+      }
+      var ctrl = ("AbortController" in window) ? new AbortController() : null;
+      var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
+
+      fetch(this.urls[idx], ctrl ? { signal: ctrl.signal, cache: "no-cache" } : { cache: "no-cache" })
+        .then(function (r) {
+          clearTimeout(timer);
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          var base = (data && data.usd) ? data.usd : null;
+          if (!base || typeof base !== "object") throw new Error("bad payload");
+          self.rates = base;
+          self.date = (data && data.date) ? data.date : new Date().toISOString().slice(0, 10);
+          self.loaded = true;
+          self.loading = false;
+          try {
+            localStorage.setItem(self.cacheKey, JSON.stringify({
+              ts: Date.now(), date: self.date, rates: self.rates
+            }));
+          } catch (e) {}
+          if (cb) cb(null, self);
+        })
+        .catch(function () {
+          clearTimeout(timer);
+          self.fetchNext(idx + 1, cachedFallback, cb);
+        });
+    },
+
+    convert: function (amount, from, to) {
+      if (!this.rates) return NaN;
+      from = (from || "").toLowerCase();
+      to = (to || "").toLowerCase();
+      if (from === to) return amount;
+      var fromRate = (from === "usd") ? 1 : this.rates[from];
+      var toRate   = (to   === "usd") ? 1 : this.rates[to];
+      if (!fromRate || !toRate) return NaN;
+      return amount / fromRate * toRate;
+    },
+
+    rate: function (from, to) {
+      return this.convert(1, from, to);
+    }
+  };
+
+  /* ============ SAAT MOTORU ============ */
+  var dnTR = displayNames("tr"), dnEN = displayNames("en");
+  var items = [];
+  var board = $("board");
+  if (!board) return;
+
+  DATA.split(";").forEach(function (r) {
+    r = r.trim();
+    if (!r) return;
+    var p = r.split(/\s+/), code = p[0], tz = p[1];
+    if (!code || !tz) return;
+    var offF;
+    try { offF = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "shortOffset" }); } catch (e) { return; }
+
+    var el = document.createElement("div");
+    el.className = "row";
+    el.innerHTML =
+      "<div class='who'><span class='flag'></span><div style='min-width:0'><div class='cn'></div><div class='zone'></div></div></div>" +
+      "<div class='time'><span class='t'></span><span class='dn' aria-hidden='true'></span></div>" +
+      "<div class='meta'><div class='dt'></div><div class='off'></div></div>";
+    el.querySelector(".flag").textContent = flagOf(code);
+    el.querySelector(".zone").textContent = tz.replace(/_/g, " ");
+
+    var it = {
+      code: code, tz: tz, el: el, offF: offF, tf: null, df: null, offMin: 0, name: "", search: "",
+      staticSearch: nameIn(dnTR, "tr", code) + " " + nameIn(dnEN, "en", code) + " " + tz.replace(/_/g, " "),
+      nameEl: el.querySelector(".cn"),
+      tEl: el.querySelector(".t"),
+      dnEl: el.querySelector(".dn"),
+      dtEl: el.querySelector(".dt"),
+      offEl: el.querySelector(".off")
+    };
+    items.push(it);
+    board.appendChild(el);
+  });
+
+  function parseOffset(str) {
+    var m = /([+\-−])(\d{1,2})(?::(\d{2}))?/.exec(str || "");
+    if (!m) return 0;
+    var sign = (m[1] === "-" || m[1] === "−") ? -1 : 1;
+    return sign * (parseInt(m[2], 10) * 60 + (m[3] ? parseInt(m[3], 10) : 0));
+  }
+
+  function diffLabel(d) {
+    if (d === 0) return t.same;
+    var sign = d > 0 ? "+" : "−";
+    var a = Math.abs(d), h = Math.floor(a / 60), mm = a % 60;
+    var hh = sign + h + (mm ? ":" + (mm < 10 ? "0" : "") + mm : "");
+    return fill(d > 0 ? t.diffAhead : t.diffBehind, { d: hh });
+  }
+
+  var myFmt;
+
+  function tick(forceSlow) {
+    var now = new Date();
+    var slow = forceSlow || now.getSeconds() % 30 === 0;
+    var lo = -now.getTimezoneOffset();
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      it.tEl.textContent = it.tf.format(now);
+      if (slow || !it.dtEl.textContent) {
+        var parts = it.offF.formatToParts(now), off = "";
+        for (var k = 0; k < parts.length; k++) {
+          if (parts[k].type === "timeZoneName") off = parts[k].value;
+        }
+        it.offMin = parseOffset(off);
+        it.dtEl.textContent = it.df.format(now);
+        var d = it.offMin - lo;
+        it.offEl.textContent = (off || "GMT");
+        it.offEl.className = "off " + (d === 0 ? "zero" : (d > 0 ? "pos" : "neg"));
+        it.offEl.title = diffLabel(d);
+        var h = new Date(now.getTime() + it.offMin * 60000).getUTCHours();
+        var day = h >= 6 && h < 19;
+        it.dnEl.textContent = day ? "☀" : "☾";
+        it.dnEl.className = "dn " + (day ? "day" : "night");
+        it.dnEl.title = day ? t.day : t.night;
+      }
+    }
+    var mt = $("myTime");
+    if (mt) mt.textContent = myFmt.format(now);
+  }
+
+  var selIdx = -1;
+
+  function visibleItems() {
+    var list = items.filter(function (it) { return !it.el.hidden; });
+    list.sort(function (a, b) {
+      return (parseInt(a.el.style.order, 10) || 0) - (parseInt(b.el.style.order, 10) || 0);
+    });
+    return list;
+  }
+
+  function clearSel() {
+    if (selIdx >= 0) {
+      var v = visibleItems();
+      if (v[selIdx]) v[selIdx].el.classList.remove("sel");
+    }
+    selIdx = -1;
+  }
+
+  function moveSel(delta) {
+    var v = visibleItems();
+    if (!v.length) return;
+    if (selIdx >= 0 && v[selIdx]) v[selIdx].el.classList.remove("sel");
+    selIdx = (selIdx < 0) ? (delta > 0 ? 0 : v.length - 1)
+                          : (selIdx + delta + v.length) % v.length;
+    var el = v[selIdx].el;
+    el.classList.add("sel");
+    el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  var toastEl = null;
+  function toast(msg) {
+    if (!toastEl) { toastEl = document.createElement("div"); toastEl.className = "toast"; document.body.appendChild(toastEl); }
+    toastEl.textContent = msg;
+    toastEl.classList.add("on");
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(function () { toastEl.classList.remove("on"); }, 1600);
+  }
+
+  function copyRow(it) {
+    var line = it.name + ": " + it.tEl.textContent + " (" + it.dtEl.textContent + ")";
+    function done() { toast(line); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(line).then(done, function () { legacyCopy(line); done(); });
+    } else { legacyCopy(line); done(); }
+  }
+  function legacyCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    ta.remove();
+  }
+
+  items.forEach(function (it) {
+    it.el.tabIndex = 0;
+    it.el.addEventListener("click", function () { copyRow(it); });
+  });
+
+  function applyView() {
+    var q = norm($("q") ? $("q").value.trim() : "");
+    var mode = $("sort") ? $("sort").value : "name";
+    var filt = $("filter") ? $("filter").value : "all";
+    var lo = -new Date().getTimezoneOffset();
+
+    var pool = items.filter(function (it) {
+      if (filt === "ahead") return it.offMin - lo > 0;
+      if (filt === "behind") return it.offMin - lo < 0;
+      if (filt === "same") {
+        var nowMs = Date.now();
+        var localD = new Date(nowMs + it.offMin * 60000).getUTCDate();
+        var myD = new Date(nowMs + lo * 60000).getUTCDate();
+        return localD === myD;
+      }
+      return true;
+    });
+
+    pool = pool.filter(function (it) { return !q || it.search.indexOf(q) > -1; });
+
+    if (mode === "time") {
+      pool.sort(function (a, b) { return a.offMin - b.offMin || a.name.localeCompare(b.name, L.loc); });
+    } else if (mode === "diff") {
+      pool.sort(function (a, b) {
+        var da = Math.abs(a.offMin - lo), db = Math.abs(b.offMin - lo);
+        return da - db || a.name.localeCompare(b.name, L.loc);
+      });
+    } else {
+      pool.sort(function (a, b) { return a.name.localeCompare(b.name, L.loc); });
+    }
+
+    var visSet = {};
+    pool.forEach(function (it, idx) { visSet[it.code] = true; it.el.hidden = false; it.el.style.order = idx; });
+    items.forEach(function (it) { if (!visSet[it.code]) { it.el.hidden = true; it.el.style.order = 9999; } });
+
+    var shown = pool.length;
+    var cEl = $("count");
+    if (cEl) cEl.innerHTML = fill(t.count, { n: shown, t: items.length });
+
+    if (selIdx >= 0 && selIdx >= shown) clearSel();
+
+    var old = board.querySelector(".empty");
+    if (!shown && !old) {
+      var e = document.createElement("div"); e.className = "empty"; e.textContent = t.none; board.appendChild(e);
+    } else if (!shown && old) { old.textContent = t.none; }
+    else if (shown && old) { old.remove(); }
+  }
+
+  /* ============ 💱 KUR UI ============ */
+  function fillCurrencySelects() {
+    var selFrom = $("fxFrom"), selTo = $("fxTo");
+    if (!selFrom || !selTo) return;
+    var seen = {}, list = [];
+    Object.keys(CURRENCY).forEach(function (k) {
+      var cur = CURRENCY[k];
+      if (!seen[cur]) { seen[cur] = true; list.push(cur); }
+    });
+    list.sort();
+    var priority = ["USD", "EUR", "TRY", "GBP", "JPY", "CNY", "RUB", "AED", "SAR", "INR"];
+    list.sort(function (a, b) {
+      var ia = priority.indexOf(a), ib = priority.indexOf(b);
+      if (ia > -1 && ib > -1) return ia - ib;
+      if (ia > -1) return -1;
+      if (ib > -1) return 1;
+      return a.localeCompare(b);
+    });
+    list.forEach(function (cur) {
+      var o1 = document.createElement("option"); o1.value = cur; o1.textContent = cur; selFrom.appendChild(o1);
+      var o2 = document.createElement("option"); o2.value = cur; o2.textContent = cur; selTo.appendChild(o2);
+    });
+    selFrom.value = "USD";
+    selTo.value = "TRY";
+  }
+
+  function updateFx() {
+    var amtEl = $("fxAmount"), fromEl = $("fxFrom"), toEl = $("fxTo");
+    if (!amtEl || !fromEl || !toEl) return;
+    var amount = parseFloat(amtEl.value);
+    if (isNaN(amount)) amount = 0;
+    var from = fromEl.value, to = toEl.value;
+    var eqEl = $("fxEq"), resEl = $("fxResult"), rateEl = $("fxRate");
+    if (!FX.loaded) {
+      if (eqEl) eqEl.textContent = amount + " " + from + " =";
+      if (resEl) resEl.textContent = "—";
+      if (rateEl) rateEl.textContent = "";
+      return;
+    }
+    var result = FX.convert(amount, from, to);
+    var rate = FX.rate(from, to);
+    if (eqEl) eqEl.textContent = amount + " " + from + " =";
+    if (resEl) resEl.textContent = isFinite(result) ? result.toLocaleString(L.loc, { maximumFractionDigits: 4 }) + " " + to : "—";
+    if (rateEl) rateEl.textContent = isFinite(rate) ? fill(t.fxRate, { a: from, b: rate.toFixed(4), c: to }) : "";
+  }
+
+  function setFxStatus(kind) {
+    var el = $("fxStatus"), up = $("fxUpdated");
+    if (!el || !up) return;
+    el.className = "fx-status";
+    if (kind === "loading") { el.textContent = t.fxLoading; up.textContent = ""; }
+    else if (kind === "error") { el.classList.add("err"); el.textContent = t.fxError; up.textContent = ""; }
+    else if (kind === "offline") { el.textContent = t.fxOffline; up.textContent = fill(t.fxUpdated, { d: FX.date || "—" }); }
+    else { el.textContent = ""; up.textContent = fill(t.fxUpdated, { d: FX.date || "—" }); }
+  }
+
+  function loadFx() {
+    setFxStatus("loading");
+    FX.load(function (err) {
+      if (err === "error") { setFxStatus("error"); return; }
+      if (err === "offline") { setFxStatus("offline"); } else { setFxStatus("ok"); }
+      updateFx();
+    });
+  }
+
+  /* ============ DİL ============ */
+  function setLang(code) {
+    if (!LANGS[code]) code = "tr";
+    L = LANGS[code]; t = T[code];
+    dnCur = displayNames(L.base);
+
+    document.documentElement.lang = L.base;
+    document.documentElement.dir = L.dir;
+    document.title = t.title;
+
+    if ($("ttl")) $("ttl").innerHTML = t.title + ' <span class="deco">✦</span>';
+    if ($("sub")) $("sub").textContent = t.sub;
+    if ($("lblQ")) $("lblQ").innerHTML = '<span class="ico">🔍</span> ' + t.search;
+    if ($("q")) $("q").placeholder = t.ph;
+    if ($("lblSort")) $("lblSort").innerHTML = '<span class="ico">⇅</span> ' + t.sort;
+    if ($("optName")) $("optName").textContent = t.byName;
+    if ($("optTime")) $("optTime").textContent = t.byTime;
+    if ($("optDiff")) $("optDiff").textContent = t.sortDiff;
+    if ($("lblFilter")) $("lblFilter").innerHTML = '<span class="ico">◎</span> ' + t.filter;
+    if ($("fAll")) $("fAll").textContent = t.fAll;
+    if ($("fSame")) $("fSame").textContent = t.fSame;
+    if ($("fAhead")) $("fAhead").textContent = t.fAhead;
+    if ($("fBehind")) $("fBehind").textContent = t.fBehind;
+
+    if ($("fxTitle")) $("fxTitle").textContent = t.fxTitle;
+    if ($("fxLblAmount")) $("fxLblAmount").textContent = t.fxAmount;
+    if ($("fxLblFrom")) $("fxLblFrom").textContent = t.fxFrom;
+    if ($("fxLblTo")) $("fxLblTo").textContent = t.fxTo;
+
+    if ($("langName")) $("langName").textContent = LANGS[code].flag + "  " + LANGS[code].name;
+    if ($("langLabel")) $("langLabel").textContent = t.langLabel;
+    if ($("lang")) $("lang").value = code;
+
+    if ($("hint")) {
+      $("hint").innerHTML =
+        '<span class="kbd">/</span> ' + t.hintSearch +
+        ' <span class="hint-sep">·</span> ' +
+        '<span class="kbd">↑</span><span class="kbd">↓</span> ' + t.hintNav +
+        ' <span class="hint-sep">·</span> ' +
+        '<span class="kbd">Enter</span> ' + t.hintCopy +
+        ' <span class="hint-sep">·</span> ' +
+        '<span class="kbd">Esc</span> ' + t.hintEsc;
+    }
+
+    myFmt = new Intl.DateTimeFormat(L.loc, { hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
+
+    if ($("myZone")) {
+      try {
+        $("myZone").textContent = t.yourTime + " · " +
+          Intl.DateTimeFormat().resolvedOptions().timeZone.replace(/_/g, " ");
+      } catch (e) { $("myZone").textContent = t.yourTime; }
+    }
+
+    items.forEach(function (it) {
+      it.name = nameIn(dnCur, L.base, it.code);
+      it.nameEl.textContent = it.name;
+      it.search = norm(it.name + " " + it.staticSearch);
+      it.tf = new Intl.DateTimeFormat(L.loc, { timeZone: it.tz, hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
+      it.df = new Intl.DateTimeFormat(L.loc, { timeZone: it.tz, weekday: "short", day: "numeric", month: "short" });
+    });
+
+    if (FX.loaded) setFxStatus("ok");
+    else if (FX.loading) setFxStatus("loading");
+    updateFx();
+
+    try { localStorage.setItem("dunya-saati-lang", code); } catch (e) {}
+    tick(true);
+    applyView();
+  }
+
+  /* ============ EVENT'LER ============ */
+  var langSel = $("lang");
+  if (langSel) {
+    Object.keys(LANGS).forEach(function (k) {
+      var o = document.createElement("option");
+      o.value = k; o.textContent = LANGS[k].flag + "  " + LANGS[k].name;
+      langSel.appendChild(o);
+    });
+    langSel.addEventListener("change", function () { setLang(langSel.value); });
+  }
+
+  if ($("q")) $("q").addEventListener("input", function () { selIdx = -1; applyView(); });
+  if ($("sort")) $("sort").addEventListener("change", function () { selIdx = -1; applyView(); });
+  if ($("filter")) $("filter").addEventListener("change", function () { selIdx = -1; applyView(); });
+
+  fillCurrencySelects();
+  var fxAmt = $("fxAmount"), fxFrom = $("fxFrom"), fxTo = $("fxTo"), fxSwap = $("fxSwap");
+  if (fxAmt) fxAmt.addEventListener("input", updateFx);
+  if (fxFrom) fxFrom.addEventListener("change", updateFx);
+  if (fxTo) fxTo.addEventListener("change", updateFx);
+  if (fxSwap) fxSwap.addEventListener("click", function () {
+    var a = fxFrom.value, b = fxTo.value;
+    fxFrom.value = b; fxTo.value = a;
+    updateFx();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    var tag = (e.target.tagName || "").toLowerCase();
+    var typing = tag === "input" || tag === "textarea" || tag === "select";
+    if (e.key === "/" && !typing) {
+      e.preventDefault();
+      var q = $("q"); if (q) { q.focus(); q.select(); }
+      return;
+    }
+    if (e.key === "Escape") {
+      var q2 = $("q");
+      if (q2 && q2.value) { q2.value = ""; applyView(); toast("✕"); }
+      clearSel();
+      if (q2) q2.blur();
+      return;
+    }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      if (typing && e.target.id !== "q") return;
+      e.preventDefault();
+      moveSel(e.key === "ArrowDown" ? 1 : -1);
+      return;
+    }
+    if (e.key === "Enter" && selIdx >= 0) {
+      e.preventDefault();
+      var v = visibleItems();
+      if (v[selIdx]) copyRow(v[selIdx]);
+      return;
+    }
+  });
+
+  /* ============ BAŞLAT ============ */
+  var start = "tr";
+  try {
+    var saved = localStorage.getItem("dunya-saati-lang");
+    if (saved && LANGS[saved]) start = saved;
+    else {
+      var nav = (navigator.language || "tr").slice(0, 2).toLowerCase();
+      if (LANGS[nav]) start = nav;
+    }
+  } catch (e) {}
+
+  setLang(start);
+  loadFx();
+  setInterval(function () { tick(false); }, 1000);
+})();
+</script>
+</body>
+</html>
