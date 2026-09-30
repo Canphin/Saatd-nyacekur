@@ -86,7 +86,26 @@
   .mine .time{font-size:1.55rem; font-weight:800; color:var(--accent);
     font-variant-numeric:tabular-nums; direction:ltr; letter-spacing:-.01em; line-height:1.1}
 
-  .fx-box{margin-top:22px; padding:16px; border-radius:16px; background:var(--card); border:1px solid var(--line)}
+  .world-now{
+    margin-top:20px; padding:14px 16px; border-radius:16px;
+    background:linear-gradient(135deg, rgba(34,211,238,.08), rgba(167,139,250,.08));
+    border:1px solid var(--accent-line);
+    display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center;
+    font-size:.82rem; color:var(--ink);
+    position:relative; overflow:hidden;
+  }
+  .world-now::before{
+    content:""; position:absolute; inset-inline:0; top:0; height:1px;
+    background:linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation:heartbeat 2s ease-in-out infinite;
+  }
+  @keyframes heartbeat{ 0%,100%{ opacity:.3 } 50%{ opacity:1 } }
+  .wn-item{display:flex; align-items:center; gap:6px; white-space:nowrap}
+  .wn-item b{color:var(--accent); font-weight:800}
+  .wn-item .ico{font-size:1rem}
+  .wn-sep{color:var(--muted); opacity:.4}
+
+  .fx-box{margin-top:14px; padding:16px; border-radius:16px; background:var(--card); border:1px solid var(--line)}
   .fx-head{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap}
   .fx-head .fx-title{font-size:.78rem; font-weight:800; color:var(--accent);
     text-transform:uppercase; letter-spacing:.12em; display:flex; align-items:center; gap:6px}
@@ -172,12 +191,16 @@
   #count b{color:#fff; font-weight:800}
 
   #board{display:flex; flex-direction:column; gap:10px}
+
+  /* Kart sarmalayıcı - açılır panel için */
+  .card-wrap{display:flex; flex-direction:column; gap:0; transition:gap .2s ease}
+
   .row{
     display:grid; grid-template-columns:1.6fr 1fr auto; gap:14px;
     align-items:center; padding:14px 16px; border-radius:14px;
     background:var(--card); border:1px solid var(--line); cursor:pointer;
     position:relative; overflow:hidden;
-    transition:background-color .15s ease, border-color .15s ease, transform .12s ease;
+    transition:background-color .15s ease, border-color .15s ease, transform .12s ease, border-end-start-radius .15s, border-end-end-radius .15s;
   }
   .row::before{content:""; position:absolute; top:12px; bottom:12px;
     inset-inline-start:0; width:3px; border-start-end-radius:3px;
@@ -187,6 +210,52 @@
   .row:hover::before{opacity:1}
   .row.sel{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft), 0 8px 24px rgba(34,211,238,.15); background:var(--card-hover)}
   .row.sel::before{opacity:1; width:4px}
+
+  /* Açılmış kart görünümü */
+  .card-wrap.open .row{
+    border-end-start-radius:0; border-end-end-radius:0;
+    border-bottom-color:transparent;
+    transform:translateY(0);
+  }
+
+  /* 🔍 Detay paneli */
+  .details{
+    max-height:0; overflow:hidden;
+    border-start-start-radius:0; border-start-end-radius:0;
+    border-end-start-radius:14px; border-end-end-radius:14px;
+    background:var(--card); border:1px solid var(--line); border-top:0;
+    transition:max-height .3s ease;
+  }
+  .card-wrap.open .details{max-height:800px}
+
+  .details-inner{
+    padding:14px 16px 16px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+    gap:10px;
+    border-top:1px solid var(--line);
+  }
+  .det-item{
+    padding:10px 12px; border-radius:10px;
+    background:#0d1628; border:1px solid var(--line);
+    display:flex; flex-direction:column; gap:3px;
+    min-width:0;
+  }
+  .det-label{
+    font-size:.66rem; font-weight:800; color:var(--accent);
+    text-transform:uppercase; letter-spacing:.1em;
+    display:flex; align-items:center; gap:5px;
+  }
+  .det-value{
+    font-size:.95rem; font-weight:700; color:#fff;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .det-value .sub{font-size:.75rem; color:var(--muted); font-weight:600; margin-inline-start:4px}
+  .det-value.warm{color:#fbbf24}
+  .det-value.cool{color:#7dd3fc}
+  .det-value.good{color:#4ade80}
+
   .who{display:flex; align-items:center; gap:12px; min-width:0}
   .flag{font-size:1.85rem; line-height:1; flex-shrink:0;
     filter:drop-shadow(0 2px 4px rgba(0,0,0,.4))}
@@ -242,6 +311,8 @@
     .t{font-size:1.45rem}
     .flag{font-size:1.6rem}
     .cn{font-size:.98rem}
+    .world-now{font-size:.76rem; padding:12px}
+    .details-inner{grid-template-columns:repeat(2, 1fr); padding:12px}
   }
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.01ms !important; animation-iteration-count:1 !important;
@@ -251,6 +322,7 @@
     .stars i:nth-child(3){top:44%;left:38%} .stars i:nth-child(4){top:60%;left:54%}
     .stars i:nth-child(5){top:76%;left:70%} .stars i:nth-child(6){top:18%;left:86%}
     .stars i:nth-child(7){top:52%;left:12%} .stars i:nth-child(8){top:88%;left:44%}
+    .world-now::before{animation:none}
   }
 </style>
 </head>
@@ -289,6 +361,16 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="world-now" id="worldNow" aria-live="polite">
+      <div class="wn-item"><span class="ico">🌍</span> <span id="wnAwake">—</span></div>
+      <div class="wn-sep">·</div>
+      <div class="wn-item"><span class="ico">🌙</span> <span id="wnMoon">—</span></div>
+      <div class="wn-sep">·</div>
+      <div class="wn-item"><span class="ico">💫</span> <span id="wnActive">—</span></div>
+      <div class="wn-sep">·</div>
+      <div class="wn-item"><span class="ico">❄️</span> <span id="wnPolar">—</span></div>
     </div>
 
     <div class="fx-box">
@@ -382,6 +464,53 @@
 
   var DATA = "TR Europe/Istanbul;US America/New_York;GB Europe/London;DE Europe/Berlin;FR Europe/Paris;IT Europe/Rome;ES Europe/Madrid;RU Europe/Moscow;CN Asia/Shanghai;JP Asia/Tokyo;KR Asia/Seoul;IN Asia/Kolkata;PK Asia/Karachi;IR Asia/Tehran;SA Asia/Riyadh;AE Asia/Dubai;EG Africa/Cairo;ZA Africa/Johannesburg;NG Africa/Lagos;KE Africa/Nairobi;BR America/Sao_Paulo;AR America/Argentina/Buenos_Aires;MX America/Mexico_City;CA America/Toronto;AU Australia/Sydney;NZ Pacific/Auckland;ID Asia/Jakarta;TH Asia/Bangkok;VN Asia/Ho_Chi_Minh;MY Asia/Kuala_Lumpur;SG Asia/Singapore;PH Asia/Manila;UA Europe/Kyiv;PL Europe/Warsaw;NL Europe/Amsterdam;BE Europe/Brussels;SE Europe/Stockholm;NO Europe/Oslo;DK Europe/Copenhagen;FI Europe/Helsinki;GR Europe/Athens;PT Europe/Lisbon;CH Europe/Zurich;AT Europe/Vienna;CZ Europe/Prague;HU Europe/Budapest;RO Europe/Bucharest;BG Europe/Sofia;RS Europe/Belgrade;HR Europe/Zagreb;SK Europe/Bratislava;SI Europe/Ljubljana;LT Europe/Vilnius;LV Europe/Riga;EE Europe/Tallinn;IE Europe/Dublin;IS Atlantic/Reykjavik;IL Asia/Jerusalem;PS Asia/Gaza;PS2 Asia/Hebron;JO Asia/Amman;LB Asia/Beirut;IQ Asia/Baghdad;KW Asia/Kuwait;QA Asia/Qatar;OM Asia/Muscat;BH Asia/Bahrain;YE Asia/Aden;SY Asia/Damascus;AF Asia/Kabul;BD Asia/Dhaka;LK Asia/Colombo;NP Asia/Kathmandu;MM Asia/Yangon;KH Asia/Phnom_Penh;LA Asia/Vientiane;MN Asia/Ulaanbaatar;KZ Asia/Almaty;UZ Asia/Tashkent;TM Asia/Ashgabat;TJ Asia/Dushanbe;KG Asia/Bishkek;AZ Asia/Baku;AM Asia/Yerevan;GE Asia/Tbilisi;CY Asia/Nicosia;MA Africa/Casablanca;DZ Africa/Algiers;TN Africa/Tunis;LY Africa/Tripoli;SD Africa/Khartoum;ET Africa/Addis_Ababa;SO Africa/Mogadishu;TZ Africa/Dar_es_Salaam;UG Africa/Kampala;GH Africa/Accra;SN Africa/Dakar;CI Africa/Abidjan;CM Africa/Douala;AO Africa/Luanda;MZ Africa/Maputo;ZW Africa/Harare;ZM Africa/Lusaka;BW Africa/Gaborone;NA Africa/Windhoek;MU Indian/Mauritius;MG Indian/Antananarivo;CL America/Santiago;PE America/Lima;CO America/Bogota;VE America/Caracas;EC America/Guayaquil;BO America/La_Paz;PY America/Asuncion;UY America/Montevideo;CU America/Havana;DO America/Santo_Domingo;GT America/Guatemala;CR America/Costa_Rica;PA America/Panama;JM America/Jamaica;TT America/Port_of_Spain;BS America/Nassau;BB America/Barbados;FJ Pacific/Fiji;PG Pacific/Port_Moresby;NC Pacific/Noumea;PF Pacific/Tahiti;WS Pacific/Apia;TO Pacific/Tongatapu;VU Pacific/Efate;SB Pacific/Guadalcanal;GU Pacific/Guam;XK Europe/Belgrade";
 
+  var POP = {
+    TR:85, US:335, GB:68, DE:84, FR:68, IT:59, ES:48, RU:144, CN:1410, JP:125,
+    KR:52, IN:1420, PK:240, IR:89, SA:36, AE:10, EG:110, ZA:60, NG:220, KE:55,
+    BR:215, AR:46, MX:130, CA:40, AU:26, NZ:5, ID:280, TH:72, VN:100, MY:34,
+    SG:6, PH:115, UA:40, PL:38, NL:18, BE:12, SE:10, NO:5.5, DK:6, FI:5.5,
+    GR:10, PT:10, CH:9, AT:9, CZ:10.5, HU:9.6, RO:19, BG:6.5, RS:6.8, HR:3.9,
+    SK:5.4, SI:2.1, LT:2.8, LV:1.9, EE:1.3, IE:5.1, IS:0.4, IL:9.7, PS:5.3,
+    PS2:5.3, JO:11, LB:5.4, IQ:44, KW:4.3, QA:2.7, OM:4.6, BH:1.5, YE:34,
+    SY:22, AF:41, BD:170, LK:22, NP:30, MM:54, KH:17, LA:7.5, MN:3.4,
+    KZ:19.6, UZ:36, TM:6.5, TJ:10, KG:7, AZ:10, AM:3, GE:3.7, CY:1.2,
+    MA:37, DZ:45, TN:12, LY:7, SD:46, ET:120, SO:18, TZ:65, UG:48, GH:34,
+    SN:18, CI:28, CM:28, AO:35, MZ:33, ZW:16, ZM:20, BW:2.6, NA:2.6,
+    MU:1.3, MG:30, CL:20, PE:34, CO:52, VE:28, EC:18, BO:12, PY:7.4,
+    UY:3.5, CU:11, DO:11, GT:18, CR:5.2, PA:4.5, JM:2.8, TT:1.5, BS:0.4,
+    BB:0.3, FJ:0.9, PG:10, NC:0.3, PF:0.3, WS:0.2, TO:0.1, VU:0.3, SB:0.7,
+    GU:0.17, XK:1.8
+  };
+
+  var POLAR = { NO:1, SE:1, FI:1, IS:1, RU:1 };
+
+  /* Lat/Lon — gün doğumu/batımı tahmini için */
+  var GEO = {
+    TR:[39,35], US:[38,-97], GB:[54,-2], DE:[51,10], FR:[46,2], IT:[42,12], ES:[40,-4],
+    RU:[60,100], CN:[35,105], JP:[36,138], KR:[37,128], IN:[20,77], PK:[30,70],
+    IR:[32,53], SA:[24,45], AE:[24,54], EG:[27,30], ZA:[-29,24], NG:[10,8],
+    KE:[1,38], BR:[-10,-55], AR:[-34,-64], MX:[23,-102], CA:[56,-106], AU:[-25,134],
+    NZ:[-41,174], ID:[-5,120], TH:[15,100], VN:[16,106], MY:[4,102], SG:[1,104],
+    PH:[13,122], UA:[49,32], PL:[52,20], NL:[52,5], BE:[50,4], SE:[62,15],
+    NO:[62,10], DK:[56,10], FI:[64,26], GR:[39,22], PT:[39,-8], CH:[47,8],
+    AT:[47,14], CZ:[50,16], HU:[47,20], RO:[46,25], BG:[43,25], RS:[44,21],
+    HR:[45,16], SK:[49,20], SI:[46,15], LT:[56,24], LV:[57,25], EE:[59,26],
+    IE:[53,-8], IS:[65,-18], IL:[31,35], PS:[32,35], PS2:[32,35], JO:[31,36],
+    LB:[34,36], IQ:[33,44], KW:[29,48], QA:[25,51], OM:[21,57], BH:[26,51],
+    YE:[16,48], SY:[35,38], AF:[33,65], BD:[24,90], LK:[7,81], NP:[28,84],
+    MM:[21,96], KH:[13,105], LA:[18,103], MN:[46,105], KZ:[48,68], UZ:[42,64],
+    TM:[40,60], TJ:[39,71], KG:[41,75], AZ:[40,48], AM:[40,45], GE:[42,43],
+    CY:[35,33], MA:[32,-6], DZ:[28,3], TN:[34,9], LY:[27,17], SD:[15,30],
+    ET:[9,40], SO:[10,49], TZ:[-6,35], UG:[2,32], GH:[8,-1], SN:[14,-14],
+    CI:[8,-5], CM:[6,12], AO:[-12,18], MZ:[-18,35], ZW:[-20,30], ZM:[-15,30],
+    BW:[-22,24], NA:[-22,17], MU:[-20,57], MG:[-20,47], CL:[-33,-71],
+    PE:[-10,-76], CO:[4,-72], VE:[8,-66], EC:[-2,-78], BO:[-17,-65],
+    PY:[-23,-58], UY:[-33,-56], CU:[22,-80], DO:[19,-70], GT:[15,-90],
+    CR:[10,-84], PA:[9,-80], JM:[18,-77], TT:[11,-61], BS:[24,-76], BB:[13,-59],
+    FJ:[-18,178], PG:[-6,147], NC:[-21,166], PF:[-17,-150], WS:[-14,-172],
+    TO:[-20,-175], VU:[-16,168], SB:[-9,160], GU:[13,145], XK:[42,21]
+  };
+
   var CURRENCY = {
     TR:"TRY", US:"USD", GB:"GBP", DE:"EUR", FR:"EUR", IT:"EUR", ES:"EUR", RU:"RUB",
     CN:"CNY", JP:"JPY", KR:"KRW", IN:"INR", PK:"PKR", IR:"IRR", SA:"SAR", AE:"AED",
@@ -415,15 +544,87 @@
   };
 
   var T = {
-    tr: { title: "Dünya Saati", sub: "Tüm ülkelerin yerel saati tek sayfada.", yourTime: "Sizin saatiniz", search: "Ara", ph: "ör. Japonya, Tokyo", sort: "Sıralama", byName: "Ülke adına göre", byTime: "Saate göre (batıdan doğuya)", sortDiff: "Sizden fark (yakından uzağa)", filter: "Filtre", fAll: "Tümü", fSame: "Aynı gün içinde", fAhead: "Benden ileride (+)", fBehind: "Benden geride (−)", count: "<b>{n}</b> ülke gösteriliyor (toplam <b>{t}</b>)", none: "Eşleşen ülke bulunamadı.", same: "sizinle aynı saat", diffAhead: "sizden +{d} sa", diffBehind: "sizden −{d} sa", day: "Gündüz", night: "Gece", langLabel: "Dil / Language", hintSearch: "ara", hintNav: "gez", hintCopy: "kopyala", hintEsc: "temizle", fxTitle: "Kur Çevirici", fxAmount: "Miktar", fxFrom: "Kaynak", fxTo: "Hedef", fxUpdated: "Güncellendi: {d}", fxLoading: "Kurlar yükleniyor…", fxError: "Kurlar yüklenemedi", fxOffline: "Çevrimdışı — son bilinen kurlar", fxRate: "1 {a} = {b} {c}" },
-    en: { title: "World Clock", sub: "Local time in every country on one page.", yourTime: "Your time", search: "Search", ph: "e.g. Japan, Tokyo", sort: "Sort", byName: "By country name", byTime: "By time (west to east)", sortDiff: "Difference from you (nearest first)", filter: "Filter", fAll: "All", fSame: "Same calendar day", fAhead: "Ahead of me (+)", fBehind: "Behind me (−)", count: "Showing <b>{n}</b> countries (of <b>{t}</b>)", none: "No matching country found.", same: "same time as you", diffAhead: "{d} h ahead", diffBehind: "{d} h behind", day: "Day", night: "Night", langLabel: "Language", hintSearch: "search", hintNav: "navigate", hintCopy: "copy", hintEsc: "clear", fxTitle: "Currency Converter", fxAmount: "Amount", fxFrom: "From", fxTo: "To", fxUpdated: "Updated: {d}", fxLoading: "Loading rates…", fxError: "Could not load rates", fxOffline: "Offline — last known rates", fxRate: "1 {a} = {b} {c}" },
-    ar: { title: "ساعة العالم", sub: "التوقيت المحلي لجميع دول العالم في صفحة واحدة.", yourTime: "توقيتك", search: "ابحث", ph: "مثال: اليابان، طوكيو", sort: "الترتيب", byName: "حسب اسم الدولة", byTime: "حسب الوقت (من الغرب إلى الشرق)", sortDiff: "الفرق عن توقيتك (الأقرب أولاً)", filter: "تصفية", fAll: "الكل", fSame: "في نفس اليوم", fAhead: "متقدم عنك (+)", fBehind: "متأخر عنك (−)", count: "يُعرض <b>{n}</b> بلدًا (من أصل <b>{t}</b>)", none: "لم يتم العثور على أي بلد مطابق.", same: "نفس توقيتك", diffAhead: "متقدم بـ {d}", diffBehind: "متأخر بـ {d}", day: "نهار", night: "ليل", langLabel: "اللغة", hintSearch: "ابحث", hintNav: "تنقّل", hintCopy: "انسخ", hintEsc: "امسح", fxTitle: "محوّل العملات", fxAmount: "المبلغ", fxFrom: "من", fxTo: "إلى", fxUpdated: "آخر تحديث: {d}", fxLoading: "جارٍ تحميل الأسعار…", fxError: "تعذّر تحميل الأسعار", fxOffline: "غير متصل — آخر أسعار معروفة", fxRate: "1 {a} = {b} {c}" },
-    ru: { title: "Мировое время", sub: "Местное время всех стран на одной странице.", yourTime: "Ваше время", search: "Поиск", ph: "например: Япония, Токио", sort: "Сортировка", byName: "По названию страны", byTime: "По времени (с запада на восток)", sortDiff: "Разница с вами (ближайшие первыми)", filter: "Фильтр", fAll: "Все", fSame: "Тот же день", fAhead: "Впереди вас (+)", fBehind: "Позади вас (−)", count: "Показано: <b>{n}</b> (всего: <b>{t}</b>)", none: "Страна не найдена.", same: "то же время, что у вас", diffAhead: "на {d} впереди", diffBehind: "на {d} позади", day: "День", night: "Ночь", langLabel: "Язык", hintSearch: "поиск", hintNav: "навигация", hintCopy: "копировать", hintEsc: "очистить", fxTitle: "Конвертер валют", fxAmount: "Сумма", fxFrom: "Из", fxTo: "В", fxUpdated: "Обновлено: {d}", fxLoading: "Загрузка курсов…", fxError: "Не удалось загрузить курсы", fxOffline: "Офлайн — последние известные курсы", fxRate: "1 {a} = {b} {c}" },
-    de: { title: "Weltzeituhr", sub: "Die Ortszeit aller Länder auf einer Seite.", yourTime: "Ihre Zeit", search: "Suche", ph: "z. B. Japan, Tokio", sort: "Sortierung", byName: "Nach Ländername", byTime: "Nach Zeit (West nach Ost)", sortDiff: "Nach Abweichung von Ihnen", filter: "Filter", fAll: "Alle", fSame: "Gleicher Kalendertag", fAhead: "Vor Ihnen (+)", fBehind: "Hinter Ihnen (−)", count: "<b>{n}</b> Länder angezeigt (von <b>{t}</b>)", none: "Kein Land gefunden.", same: "gleiche Zeit wie Sie", diffAhead: "{d} Std. voraus", diffBehind: "{d} Std. zurück", day: "Tag", night: "Nacht", langLabel: "Sprache", hintSearch: "suchen", hintNav: "navigieren", hintCopy: "kopieren", hintEsc: "leeren", fxTitle: "Währungsrechner", fxAmount: "Betrag", fxFrom: "Von", fxTo: "Nach", fxUpdated: "Aktualisiert: {d}", fxLoading: "Kurse werden geladen…", fxError: "Kurse konnten nicht geladen werden", fxOffline: "Offline — letzte bekannte Kurse", fxRate: "1 {a} = {b} {c}" },
-    zh: { title: "世界时钟", sub: "在一个页面查看所有国家的当地时间。", yourTime: "您的时间", search: "搜索", ph: "例如：日本、东京", sort: "排序", byName: "按国家名称", byTime: "按时间（自西向东）", sortDiff: "与您的时差（由近到远）", filter: "筛选", fAll: "全部", fSame: "同一天内", fAhead: "比您快 (+)", fBehind: "比您慢 (−)", count: "显示 <b>{n}</b> 个国家（共 <b>{t}</b> 个）", none: "未找到匹配的国家。", same: "与您时间相同", diffAhead: "比您快 {d}", diffBehind: "比您慢 {d}", day: "白天", night: "夜晚", langLabel: "语言", hintSearch: "搜索", hintNav: "导航", hintCopy: "复制", hintEsc: "清除", fxTitle: "货币转换器", fxAmount: "金额", fxFrom: "从", fxTo: "到", fxUpdated: "更新于 {d}", fxLoading: "正在加载汇率…", fxError: "无法加载汇率", fxOffline: "离线 — 最后的已知汇率", fxRate: "1 {a} = {b} {c}" },
-    fr: { title: "Heure mondiale", sub: "L'heure locale de tous les pays sur une seule page.", yourTime: "Votre heure", search: "Rechercher", ph: "ex. Japon, Tokyo", sort: "Tri", byName: "Par nom de pays", byTime: "Par heure (d'ouest en est)", sortDiff: "Par écart avec vous", filter: "Filtre", fAll: "Tous", fSame: "Même jour civil", fAhead: "En avance sur vous (+)", fBehind: "En retard sur vous (−)", count: "<b>{n}</b> pays affichés (sur <b>{t}</b>)", none: "Aucun pays correspondant.", same: "même heure que vous", diffAhead: "{d} h d'avance", diffBehind: "{d} h de retard", day: "Jour", night: "Nuit", langLabel: "Langue", hintSearch: "rechercher", hintNav: "naviguer", hintCopy: "copier", hintEsc: "effacer", fxTitle: "Convertisseur de devises", fxAmount: "Montant", fxFrom: "De", fxTo: "Vers", fxUpdated: "Mis à jour : {d}", fxLoading: "Chargement des taux…", fxError: "Échec du chargement des taux", fxOffline: "Hors ligne — derniers taux connus", fxRate: "1 {a} = {b} {c}" },
-    es: { title: "Hora mundial", sub: "La hora local de todos los países en una sola página.", yourTime: "Su hora", search: "Buscar", ph: "p. ej. Japón, Tokio", sort: "Orden", byName: "Por nombre de país", byTime: "Por hora (de oeste a este)", sortDiff: "Por diferencia con usted", filter: "Filtro", fAll: "Todos", fSame: "Mismo día natural", fAhead: "Por delante de usted (+)", fBehind: "Por detrás de usted (−)", count: "Mostrando <b>{n}</b> países (de <b>{t}</b>)", none: "No se encontró ningún país.", same: "misma hora que usted", diffAhead: "{d} h por delante", diffBehind: "{d} h por detrás", day: "Día", night: "Noche", langLabel: "Idioma", hintSearch: "buscar", hintNav: "navegar", hintCopy: "copiar", hintEsc: "limpiar", fxTitle: "Conversor de divisas", fxAmount: "Cantidad", fxFrom: "De", fxTo: "A", fxUpdated: "Actualizado: {d}", fxLoading: "Cargando tasas…", fxError: "No se pudieron cargar las tasas", fxOffline: "Sin conexión — últimas tasas conocidas", fxRate: "1 {a} = {b} {c}" },
-    ja: { title: "世界時計", sub: "すべての国の現地時間を1ページで確認できます。", yourTime: "あなたの現地時間", search: "検索", ph: "例：日本、東京", sort: "並べ替え", byName: "国名順", byTime: "時刻順（西から東へ）", sortDiff: "あなたとの時差（近い順）", filter: "フィルター", fAll: "すべて", fSame: "同じ日付", fAhead: "あなたより進んでいる (+)", fBehind: "あなたより遅れている (−)", count: "<b>{n}</b> ヶ国を表示中（全 <b>{t}</b> ヶ国）", none: "該当する国が見つかりません。", same: "あなたと同じ時刻", diffAhead: "{d} 進んでいます", diffBehind: "{d} 遅れています", day: "昼", night: "夜", langLabel: "言語", hintSearch: "検索", hintNav: "移動", hintCopy: "コピー", hintEsc: "クリア", fxTitle: "通貨換算", fxAmount: "金額", fxFrom: "変換元", fxTo: "変換先", fxUpdated: "更新日時: {d}", fxLoading: "レートを読み込み中…", fxError: "レートを読み込めませんでした", fxOffline: "オフライン — 最後に取得したレート", fxRate: "1 {a} = {b} {c}" }
+    tr: { title: "Dünya Saati", sub: "Tüm ülkelerin yerel saati tek sayfada.", yourTime: "Sizin saatiniz", search: "Ara", ph: "ör. Japonya, Tokyo", sort: "Sıralama", byName: "Ülke adına göre", byTime: "Saate göre (batıdan doğuya)", sortDiff: "Sizden fark (yakından uzağa)", filter: "Filtre", fAll: "Tümü", fSame: "Aynı gün içinde", fAhead: "Benden ileride (+)", fBehind: "Benden geride (−)", count: "<b>{n}</b> ülke gösteriliyor (toplam <b>{t}</b>)", none: "Eşleşen ülke bulunamadı.", same: "sizinle aynı saat", diffAhead: "sizden +{d} sa", diffBehind: "sizden −{d} sa", day: "Gündüz", night: "Gece", langLabel: "Dil / Language", hintSearch: "ara", hintNav: "gez", hintCopy: "kopyala", hintEsc: "temizle", fxTitle: "Kur Çevirici", fxAmount: "Miktar", fxFrom: "Kaynak", fxTo: "Hedef", fxUpdated: "Güncellendi: {d}", fxLoading: "Kurlar yükleniyor…", fxError: "Kurlar yüklenemedi", fxOffline: "Çevrimdışı — son bilinen kurlar", fxRate: "1 {a} = {b} {c}",
+      wnAwake: "<b>{p}</b> kişi uyanık", wnMoon: "Ay: <b>{m}</b>", wnActive: "En aktif saat: <b>{t}</b>", wnPolar: "Kutup: <b>{s}</b>",
+      detLocalTime: "Yerel saat", detLocalDate: "Tarih", detOffset: "GMT offset", detDiff: "Sizden fark",
+      detUyuyan: "Uyanık nüfus", detPop: "Nüfus", detSun: "Gün doğumu / batımı", detDayLen: "Gündüz süresi",
+      detMoon: "Ay evresi", detPolar: "Kutup durumu", detCurrency: "Para birimi", detZone: "Saat dilimi",
+      peopleM: "mn kişi", pct: "%{p}",
+      moonNew: "Yeni Ay", moonWaxCres: "Büyüyen Hilal", moonFirstQ: "İlk Dördün", moonWaxGib: "Büyüyen Şişkin", moonFull: "Dolunay", moonWanGib: "Küçülen Şişkin", moonLastQ: "Son Dördün", moonWanCres: "Küçülen Hilal",
+      polarMidnight: "Gece Yarısı Güneşi", polarNight: "Kutup Gecesi", polarNormal: "Normal",
+      hintClick: "Detay için karta tıkla" },
+    en: { title: "World Clock", sub: "Local time in every country on one page.", yourTime: "Your time", search: "Search", ph: "e.g. Japan, Tokyo", sort: "Sort", byName: "By country name", byTime: "By time (west to east)", sortDiff: "Difference from you (nearest first)", filter: "Filter", fAll: "All", fSame: "Same calendar day", fAhead: "Ahead of me (+)", fBehind: "Behind me (−)", count: "Showing <b>{n}</b> countries (of <b>{t}</b>)", none: "No matching country found.", same: "same time as you", diffAhead: "{d} h ahead", diffBehind: "{d} h behind", day: "Day", night: "Night", langLabel: "Language", hintSearch: "search", hintNav: "navigate", hintCopy: "copy", hintEsc: "clear", fxTitle: "Currency Converter", fxAmount: "Amount", fxFrom: "From", fxTo: "To", fxUpdated: "Updated: {d}", fxLoading: "Loading rates…", fxError: "Could not load rates", fxOffline: "Offline — last known rates", fxRate: "1 {a} = {b} {c}",
+      wnAwake: "<b>{p}</b> people awake", wnMoon: "Moon: <b>{m}</b>", wnActive: "Peak hour: <b>{t}</b>", wnPolar: "Polar: <b>{s}</b>",
+      detLocalTime: "Local time", detLocalDate: "Date", detOffset: "GMT offset", detDiff: "Diff from you",
+      detUyuyan: "Awake people", detPop: "Population", detSun: "Sunrise / sunset", detDayLen: "Day length",
+      detMoon: "Moon phase", detPolar: "Polar state", detCurrency: "Currency", detZone: "Time zone",
+      peopleM: "M people", pct: "{p}%",
+      moonNew: "New Moon", moonWaxCres: "Waxing Crescent", moonFirstQ: "First Quarter", moonWaxGib: "Waxing Gibbous", moonFull: "Full Moon", moonWanGib: "Waning Gibbous", moonLastQ: "Last Quarter", moonWanCres: "Waning Crescent",
+      polarMidnight: "Midnight Sun", polarNight: "Polar Night", polarNormal: "Normal",
+      hintClick: "Tap card for details" },
+    ar: { title: "ساعة العالم", sub: "التوقيت المحلي لجميع دول العالم في صفحة واحدة.", yourTime: "توقيتك", search: "ابحث", ph: "مثال: اليابان، طوكيو", sort: "الترتيب", byName: "حسب اسم الدولة", byTime: "حسب الوقت (من الغرب إلى الشرق)", sortDiff: "الفرق عن توقيتك (الأقرب أولاً)", filter: "تصفية", fAll: "الكل", fSame: "في نفس اليوم", fAhead: "متقدم عنك (+)", fBehind: "متأخر عنك (−)", count: "يُعرض <b>{n}</b> بلدًا (من أصل <b>{t}</b>)", none: "لم يتم العثور على أي بلد مطابق.", same: "نفس توقيتك", diffAhead: "متقدم بـ {d}", diffBehind: "متأخر بـ {d}", day: "نهار", night: "ليل", langLabel: "اللغة", hintSearch: "ابحث", hintNav: "تنقّل", hintCopy: "انسخ", hintEsc: "امسح", fxTitle: "محوّل العملات", fxAmount: "المبلغ", fxFrom: "من", fxTo: "إلى", fxUpdated: "آخر تحديث: {d}", fxLoading: "جارٍ تحميل الأسعار…", fxError: "تعذّر تحميل الأسعار", fxOffline: "غير متصل — آخر أسعار معروفة", fxRate: "1 {a} = {b} {c}",
+      wnAwake: "<b>{p}</b> مستيقظون", wnMoon: "القمر: <b>{m}</b>", wnActive: "الساعة الأكثر نشاطًا: <b>{t}</b>", wnPolar: "القطب: <b>{s}</b>",
+      detLocalTime: "الوقت المحلي", detLocalDate: "التاريخ", detOffset: "غرينتش", detDiff: "الفرق عنك",
+      detUyuyan: "المستيقظون", detPop: "السكان", detSun: "الشروق / الغروب", detDayLen: "طول النهار",
+      detMoon: "طور القمر", detPolar: "حالة القطب", detCurrency: "العملة", detZone: "المنطقة الزمنية",
+      peopleM: "مليون", pct: "%{p}",
+      moonNew: "محاق", moonWaxCres: "هلال متزايد", moonFirstQ: "التربيع الأول", moonWaxGib: "أحدب متزايد", moonFull: "بدر", moonWanGib: "أحدب متناقص", moonLastQ: "التربيع الأخير", moonWanCres: "هلال متناقص",
+      polarMidnight: "شمس منتصف الليل", polarNight: "الليل القطبي", polarNormal: "عادي",
+      hintClick: "اضغط للتفاصيل" },
+    ru: { title: "Мировое время", sub: "Местное время всех стран на одной странице.", yourTime: "Ваше время", search: "Поиск", ph: "например: Япония, Токио", sort: "Сортировка", byName: "По названию страны", byTime: "По времени (с запада на восток)", sortDiff: "Разница с вами (ближайшие первыми)", filter: "Фильтр", fAll: "Все", fSame: "Тот же день", fAhead: "Впереди вас (+)", fBehind: "Позади вас (−)", count: "Показано: <b>{n}</b> (всего: <b>{t}</b>)", none: "Страна не найдена.", same: "то же время, что у вас", diffAhead: "на {d} впереди", diffBehind: "на {d} позади", day: "День", night: "Ночь", langLabel: "Язык", hintSearch: "поиск", hintNav: "навигация", hintCopy: "копировать", hintEsc: "очистить", fxTitle: "Конвертер валют", fxAmount: "Сумма", fxFrom: "Из", fxTo: "В", fxUpdated: "Обновлено: {d}", fxLoading: "Загрузка курсов…", fxError: "Не удалось загрузить курсы", fxOffline: "Офлайн — последние известные курсы", fxRate: "1 {a} = {b} {c}",
+      wnAwake: "<b>{p}</b> бодрствуют", wnMoon: "Луна: <b>{m}</b>", wnActive: "Пиковый час: <b>{t}</b>", wnPolar: "Полюс: <b>{s}</b>",
+      detLocalTime: "Местное время", detLocalDate: "Дата", detOffset: "GMT", detDiff: "Разница с вами",
+      detUyuyan: "Бодрствуют", detPop: "Население", detSun: "Восход / закат", detDayLen: "Длина дня",
+      detMoon: "Фаза Луны", detPolar: "Полярное состояние", detCurrency: "Валюта", detZone: "Часовой пояс",
+      peopleM: "млн", pct: "{p}%",
+      moonNew: "Новолуние", moonWaxCres: "Растущий серп", moonFirstQ: "Первая четверть", moonWaxGib: "Растущая Луна", moonFull: "Полнолуние", moonWanGib: "Убывающая Луна", moonLastQ: "Последняя четверть", moonWanCres: "Убывающий серп",
+      polarMidnight: "Полярный день", polarNight: "Полярная ночь", polarNormal: "Обычно",
+      hintClick: "Нажмите для деталей" },
+    de: { title: "Weltzeituhr", sub: "Die Ortszeit aller Länder auf einer Seite.", yourTime: "Ihre Zeit", search: "Suche", ph: "z. B. Japan, Tokio", sort: "Sortierung", byName: "Nach Ländername", byTime: "Nach Zeit (West nach Ost)", sortDiff: "Nach Abweichung von Ihnen", filter: "Filter", fAll: "Alle", fSame: "Gleicher Kalendertag", fAhead: "Vor Ihnen (+)", fBehind: "Hinter Ihnen (−)", count: "<b>{n}</b> Länder angezeigt (von <b>{t}</b>)", none: "Kein Land gefunden.", same: "gleiche Zeit wie Sie", diffAhead: "{d} Std. voraus", diffBehind: "{d} Std. zurück", day: "Tag", night: "Nacht", langLabel: "Sprache", hintSearch: "suchen", hintNav: "navigieren", hintCopy: "kopieren", hintEsc: "leeren", fxTitle: "Währungsrechner", fxAmount: "Betrag", fxFrom: "Von", fxTo: "Nach", fxUpdated: "Aktualisiert: {d}", fxLoading: "Kurse werden geladen…", fxError: "Kurse konnten nicht geladen werden", fxOffline: "Offline — letzte bekannte Kurse", fxRate: "1 {a} = {b} {c}",
+      wnAwake: "<b>{p}</b> Menschen wach", wnMoon: "Mond: <b>{m}</b>", wnActive: "Stoßzeit: <b>{t}</b>", wnPolar: "Polar: <b>{s}</b>",
+      detLocalTime: "Ortszeit", detLocalDate: "Datum", detOffset: "GMT", detDiff: "Abw. von Ihnen",
+      detUyuyan: "Wach", detPop: "Bevölkerung", detSun: "Sonnenauf-/untergang", detDayLen: "Tageslänge",
+      detMoon: "Mondphase", detPolar: "Polarzustand", detCurrency: "Währung", detZone: "Zeitzone",
+      peopleM: "Mio.", pct: "{p}%",
+      moonNew: "Neumond", moonWaxCres: "Zunehmende Sichel", moonFirstQ: "Erstes Viertel", moonWaxGib: "Zunehmender Mond", moonFull: "Vollmond", moonWanGib: "Abnehmender Mond", moonLastQ: "Letztes Viertel", moonWanCres: "Abnehmende Sichel",
+      polarMidnight: "Mitternachtssonne", polarNight: "Polarnacht", polarNormal: "Normal",
+      hintClick: "Für Details tippen" },
+    zh: { title: "世界时钟", sub: "在一个页面查看所有国家的当地时间。", yourTime: "您的时间", search: "搜索", ph: "例如：日本、东京", sort: "排序", byName: "按国家名称", byTime: "按时间（自西向东）", sortDiff: "与您的时差（由近到远）", filter: "筛选", fAll: "全部", fSame: "同一天内", fAhead: "比您快 (+)", fBehind: "比您慢 (−)", count: "显示 <b>{n}</b> 个国家（共 <b>{t}</b> 个）", none: "未找到匹配的国家。", same: "与您时间相同", diffAhead: "比您快 {d}", diffBehind: "比您慢 {d}", day: "白天", night: "夜晚", langLabel: "语言", hintSearch: "搜索", hintNav: "导航", hintCopy: "复制", hintEsc: "清除", fxTitle: "货币转换器", fxAmount: "金额", fxFrom: "从", fxTo: "到", fxUpdated: "更新于 {d}", fxLoading: "正在加载汇率…", fxError: "无法加载汇率", fxOffline: "离线 — 最后的已知汇率", fxRate: "1 {a} = {b} {c}",
+      wnAwake: "<b>{p}</b> 人醒着", wnMoon: "月亮: <b>{m}</b>", wnActive: "高峰时刻: <b>{t}</b>", wnPolar: "极地: <b>{s}</b>",
+      detLocalTime: "当地时间", detLocalDate: "日期", detOffset: "GMT", detDiff: "与您的差异",
+      detUyuyan: "醒着", detPop: "人口", detSun: "日出 / 日落", detDayLen: "日照长度",
+      detMoon: "月相", detPolar: "极地状态", detCurrency: "货币", detZone: "时区",
+      peopleM: "百万", pct: "{p}%",
+      moonNew: "新月", moonWaxCres: "娥眉月", moonFirstQ: "上弦月", moonWaxGib: "盈凸月", moonFull: "满月", moonWanGib: "亏凸月", moonLastQ: "下弦月", moonWanCres: "残月",
+      polarMidnight: "极昼", polarNight: "极夜", polarNormal: "正常",
+      hintClick: "点击卡片查看详情" },
+    fr: { title: "Heure mondiale", sub: "L'heure locale de tous les pays sur une seule page.", yourTime: "Votre heure", search: "Rechercher", ph: "ex. Japon, Tokyo", sort: "Tri", byName: "Par nom de pays", byTime: "Par heure (d'ouest en est)", sortDiff: "Par écart avec vous", filter: "Filtre", fAll: "Tous", fSame: "Même jour civil", fAhead: "En avance sur vous (+)", fBehind: "En retard sur vous (−)", count: "<b>{n}</b> pays affichés (sur <b>{t}</b>)", none: "Aucun pays correspondant.", same: "même heure que vous", diffAhead: "{d} h d'avance", diffBehind: "{d} h de retard", day: "Jour", night: "Nuit", langLabel: "Langue", hintSearch: "rechercher", hintNav: "naviguer", hintCopy: "copier", hintEsc: "effacer", fxTitle: "Convertisseur de devises", fxAmount: "Montant", fxFrom: "De", fxTo: "Vers", fxUpdated: "Mis à jour : {d}", fxLoading: "Chargement des taux…", fxError: "Échec du chargement des taux", fxOffline: "Hors ligne — derniers taux connus", fxRate: "1 {a} = {b} {c}",
+      wnAwake: "<b>{p}</b> personnes éveillées", wnMoon: "Lune : <b>{m}</b>", wnActive: "Heure de pointe : <b>{t}</b>", wnPolar: "Polaire : <b>{s}</b>",
+      detLocalTime: "Heure locale", detLocalDate: "Date", detOffset: "GMT", detDiff: "Écart avec vous",
+      detUyuyan: "Éveillés", detPop: "Population", detSun: "Lever / coucher", detDayLen: "Durée du jour",
+      detMoon: "Phase de Lune", detPolar: "État polaire", detCurrency: "Devise", detZone: "Fuseau horaire",
+      peopleM: "M", pct: "{p} %",
+      moonNew: "Nouvelle Lune", moonWaxCres: "Croissant croissant", moonFirstQ: "Premier Quartier", moonWaxGib: "Gibbeuse croissante", moonFull: "Pleine Lune", moonWanGib: "Gibbeuse décroissante", moonLastQ: "Dernier Quartier", moonWanCres: "Croissant décroissant",
+      polarMidnight: "Soleil de minuit", polarNight: "Nuit polaire", polarNormal: "Normal",
+      hintClick: "Touchez pour les détails" },
+    es: { title: "Hora mundial", sub: "La hora local de todos los países en una sola página.", yourTime: "Su hora", search: "Buscar", ph: "p. ej. Japón, Tokio", sort: "Orden", byName: "Por nombre de país", byTime: "Por hora (de oeste a este)", sortDiff: "Por diferencia con usted", filter: "Filtro", fAll: "Todos", fSame: "Mismo día natural", fAhead: "Por delante de usted (+)", fBehind: "Por detrás de usted (−)", count: "Mostrando <b>{n}</b> países (de <b>{t}</b>)", none: "No se encontró ningún país.", same: "misma hora que usted", diffAhead: "{d} h por delante", diffBehind: "{d} h por detrás", day: "Día", night: "Noche", langLabel: "Idioma", hintSearch: "buscar", hintNav: "navegar", hintCopy: "copiar", hintEsc: "limpiar", fxTitle: "Conversor de divisas", fxAmount: "Cantidad", fxFrom: "De", fxTo: "A", fxUpdated: "Actualizado: {d}", fxLoading: "Cargando tasas…", fxError: "No se pudieron cargar las tasas", fxOffline: "Sin conexión — últimas tasas conocidas", fxRate: "1 {a} = {b} {c}",
+      wnAwake: "<b>{p}</b> personas despiertas", wnMoon: "Luna: <b>{m}</b>", wnActive: "Hora pico: <b>{t}</b>", wnPolar: "Polar: <b>{s}</b>",
+      detLocalTime: "Hora local", detLocalDate: "Fecha", detOffset: "GMT", detDiff: "Dif. con usted",
+      detUyuyan: "Despiertos", detPop: "Población", detSun: "Amanecer / atardecer", detDayLen: "Duración del día",
+      detMoon: "Fase lunar", detPolar: "Estado polar", detCurrency: "Moneda", detZone: "Zona horaria",
+      peopleM: "M", pct: "{p}%",
+      moonNew: "Luna Nueva", moonWaxCres: "Luna Creciente", moonFirstQ: "Cuarto Creciente", moonWaxGib: "Gibosa Creciente", moonFull: "Luna Llena", moonWanGib: "Gibosa Menguante", moonLastQ: "Cuarto Menguante", moonWanCres: "Luna Menguante",
+      polarMidnight: "Sol de medianoche", polarNight: "Noche polar", polarNormal: "Normal",
+      hintClick: "Toca para detalles" },
+    ja: { title: "世界時計", sub: "すべての国の現地時間を1ページで確認できます。", yourTime: "あなたの現地時間", search: "検索", ph: "例：日本、東京", sort: "並べ替え", byName: "国名順", byTime: "時刻順（西から東へ）", sortDiff: "あなたとの時差（近い順）", filter: "フィルター", fAll: "すべて", fSame: "同じ日付", fAhead: "あなたより進んでいる (+)", fBehind: "あなたより遅れている (−)", count: "<b>{n}</b> ヶ国を表示中（全 <b>{t}</b> ヶ国）", none: "該当する国が見つかりません。", same: "あなたと同じ時刻", diffAhead: "{d} 進んでいます", diffBehind: "{d} 遅れています", day: "昼", night: "夜", langLabel: "言語", hintSearch: "検索", hintNav: "移動", hintCopy: "コピー", hintEsc: "クリア", fxTitle: "通貨換算", fxAmount: "金額", fxFrom: "変換元", fxTo: "変換先", fxUpdated: "更新日時: {d}", fxLoading: "レートを読み込み中…", fxError: "レートを読み込めませんでした", fxOffline: "オフライン — 最後に取得したレート", fxRate: "1 {a} = {b} {c}",
+      wnAwake: "<b>{p}</b> 人が起きている", wnMoon: "月: <b>{m}</b>", wnActive: "ピーク時間: <b>{t}</b>", wnPolar: "極地: <b>{s}</b>",
+      detLocalTime: "現地時間", detLocalDate: "日付", detOffset: "GMT", detDiff: "あなたとの差",
+      detUyuyan: "起きている", detPop: "人口", detSun: "日の出 / 日の入り", detDayLen: "日照時間",
+      detMoon: "月相", detPolar: "極地状態", detCurrency: "通貨", detZone: "タイムゾーン",
+      peopleM: "百万人", pct: "{p}%",
+      moonNew: "新月", moonWaxCres: "三日月", moonFirstQ: "上弦", moonWaxGib: "十三夜月", moonFull: "満月", moonWanGib: "十六夜月", moonLastQ: "下弦", moonWanCres: "有明月",
+      polarMidnight: "白夜", polarNight: "極夜", polarNormal: "通常",
+      hintClick: "カードをタップで詳細" }
   };
 
   var OVERRIDE = {
@@ -454,6 +655,66 @@
   }
   function norm(s) { return (s || "").toLocaleLowerCase(L.loc); }
   function fill(str, map) { return str.replace(/\{(\w+)\}/g, function (_, k) { return map[k]; }); }
+
+  function moonPhase(date) {
+    var d = date || new Date();
+    var y = d.getUTCFullYear(), m = d.getUTCMonth() + 1, day = d.getUTCDate();
+    var c, e;
+    if (m < 3) { y--; m += 12; }
+    c = Math.floor(y / 100);
+    e = 2 - c + Math.floor(c / 4);
+    var jd = Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + day + e - 1524.5;
+    var daysSinceNew = (jd - 2451550.1) % 29.530588853;
+    if (daysSinceNew < 0) daysSinceNew += 29.530588853;
+    var phase = daysSinceNew / 29.530588853;
+    var idx;
+    if (phase < 0.0625 || phase >= 0.9375) idx = 0;
+    else if (phase < 0.1875) idx = 1;
+    else if (phase < 0.3125) idx = 2;
+    else if (phase < 0.4375) idx = 3;
+    else if (phase < 0.5625) idx = 4;
+    else if (phase < 0.6875) idx = 5;
+    else if (phase < 0.8125) idx = 6;
+    else idx = 7;
+    var icons = ["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"];
+    var keys = ["moonNew","moonWaxCres","moonFirstQ","moonWaxGib","moonFull","moonWanGib","moonLastQ","moonWanCres"];
+    return { idx: idx, icon: icons[idx], key: keys[idx], phase: phase };
+  }
+
+  /* 🌅 Gün doğumu/batımı — NOAA basit hesap (yaklaşık) */
+  function sunTimes(lat, lon, date) {
+    var d = date || new Date();
+    var rad = Math.PI / 180;
+    var N = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
+    var decl = 23.44 * Math.sin(rad * (360 / 365) * (N - 81));
+    var latRad = lat * rad;
+    var declRad = decl * rad;
+    var cosH = -Math.tan(latRad) * Math.tan(declRad);
+    if (cosH > 1) return { polar: "night" };
+    if (cosH < -1) return { polar: "midnight" };
+    var H = Math.acos(cosH) / rad; // derece
+    var solarNoonUTC = 12 - lon / 15;
+    var sunriseUTC = solarNoonUTC - H / 15;
+    var sunsetUTC  = solarNoonUTC + H / 15;
+    function fmt(utcHours) {
+      var h = Math.floor(utcHours);
+      var m = Math.round((utcHours - h) * 60);
+      if (m === 60) { h++; m = 0; }
+      if (h < 0) h += 24;
+      if (h >= 24) h -= 24;
+      return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
+    }
+    var dayLen = 2 * H / 15; // saat
+    return { sunrise: fmt(sunriseUTC), sunset: fmt(sunsetUTC), dayLen: dayLen, polar: null };
+  }
+
+  function polarStateKey(date) {
+    var d = date || new Date();
+    var n = d.getUTCMonth() * 30 + d.getUTCDate();
+    if (n >= 152 && n <= 243) return "polarMidnight";
+    if (n >= 335 || n <= 60) return "polarNight";
+    return "polarNormal";
+  }
 
   var FX = {
     rates: null, date: null, loaded: false, loading: false,
@@ -529,26 +790,40 @@
     var offF;
     try { offF = new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "shortOffset" }); } catch (e) { return; }
 
+    var wrap = document.createElement("div");
+    wrap.className = "card-wrap";
+
     var el = document.createElement("div");
     el.className = "row";
     el.innerHTML =
       "<div class='who'><span class='flag'></span><div style='min-width:0'><div class='cn'></div><div class='zone'></div></div></div>" +
       "<div class='time'><span class='t'></span><span class='dn' aria-hidden='true'></span></div>" +
       "<div class='meta'><div class='dt'></div><div class='off'></div></div>";
+
+    var details = document.createElement("div");
+    details.className = "details";
+    details.innerHTML = '<div class="details-inner"></div>';
+
+    wrap.appendChild(el);
+    wrap.appendChild(details);
     el.querySelector(".flag").textContent = flagOf(code);
     el.querySelector(".zone").textContent = tz.replace(/_/g, " ");
 
     var it = {
-      code: code, tz: tz, el: el, offF: offF, tf: null, df: null, offMin: 0, name: "", search: "",
+      code: code, tz: tz, el: el, wrap: wrap, details: details,
+      inner: details.querySelector(".details-inner"),
+      offF: offF, tf: null, df: null, offMin: 0, name: "", search: "",
       staticSearch: nameIn(dnTR, "tr", code) + " " + nameIn(dnEN, "en", code) + " " + tz.replace(/_/g, " "),
       nameEl: el.querySelector(".cn"),
       tEl: el.querySelector(".t"),
       dnEl: el.querySelector(".dn"),
       dtEl: el.querySelector(".dt"),
-      offEl: el.querySelector(".off")
+      offEl: el.querySelector(".off"),
+      open: false,
+      detailsBuilt: false
     };
     items.push(it);
-    board.appendChild(el);
+    board.appendChild(wrap);
   });
 
   function parseOffset(str) {
@@ -564,6 +839,92 @@
     var a = Math.abs(d), h = Math.floor(a / 60), mm = a % 60;
     var hh = sign + h + (mm ? ":" + (mm < 10 ? "0" : "") + mm : "");
     return fill(d > 0 ? t.diffAhead : t.diffBehind, { d: hh });
+  }
+
+  function fmtOffset(min) {
+    var sign = min >= 0 ? "+" : "−";
+    var a = Math.abs(min);
+    var h = Math.floor(a / 60), m = a % 60;
+    return "GMT" + sign + h + (m ? ":" + (m < 10 ? "0" : "") + m : "");
+  }
+
+  function buildDetails(it) {
+    var now = new Date();
+    var localMs = now.getTime() + it.offMin * 60000;
+    var localDate = new Date(localMs);
+    var localH = localDate.getUTCHours();
+    var localDateStr = localDate.getUTCDate() + "." + (localDate.getUTCMonth() + 1) + "." + localDate.getUTCFullYear();
+
+    var lo = -now.getTimezoneOffset();
+    var diffMin = it.offMin - lo;
+    var diffTxt = diffMin === 0 ? t.same : diffLabel(diffMin);
+
+    var pop = POP[it.code] || 0;
+    var isAwake = (localH >= 6 && localH < 22);
+    var awakeCount = isAwake ? pop : 0;
+
+    var mp = moonPhase(now);
+
+    var geo = GEO[it.code];
+    var sunHtml = "";
+    if (geo) {
+      var st = sunTimes(geo[0], geo[1], now);
+      if (st.polar === "night") sunHtml = "—";
+      else if (st.polar === "midnight") sunHtml = "24h " + "☀";
+      else sunHtml = st.sunrise + " / " + st.sunset;
+    } else sunHtml = "—";
+
+    var polarKey = polarStateKey(now);
+    var polarTxt = t[polarKey];
+
+    var cur = CURRENCY[it.code] || "—";
+
+    var html =
+      '<div class="det-item"><div class="det-label">🕐 ' + t.detLocalTime + '</div><div class="det-value">' + it.tEl.textContent + '</div></div>' +
+      '<div class="det-item"><div class="det-label">📅 ' + t.detLocalDate + '</div><div class="det-value">' + localDateStr + '</div></div>' +
+      '<div class="det-item"><div class="det-label">🌐 ' + t.detOffset + '</div><div class="det-value">' + fmtOffset(it.offMin) + '</div></div>' +
+      '<div class="det-item"><div class="det-label">⏱️ ' + t.detDiff + '</div><div class="det-value ' + (diffMin === 0 ? 'good' : (diffMin > 0 ? 'warm' : 'cool')) + '">' + diffTxt + '</div></div>' +
+      '<div class="det-item"><div class="det-label">🌅 ' + t.detSun + '</div><div class="det-value">' + sunHtml + '</div></div>' +
+      '<div class="det-item"><div class="det-label">🌙 ' + t.detMoon + '</div><div class="det-value">' + mp.icon + ' <span class="sub">' + t[mp.key] + '</span></div></div>' +
+      '<div class="det-item"><div class="det-label">👥 ' + t.detPop + '</div><div class="det-value">' + (pop ? pop + ' <span class="sub">' + t.peopleM + '</span>' : '—') + '</div></div>' +
+      '<div class="det-item"><div class="det-label">💤 ' + t.detUyuyan + '</div><div class="det-value">' + (pop ? (isAwake ? (pop * 0.75).toFixed(1) + ' <span class="sub">' + t.peopleM + '</span>' : (pop * 0.15).toFixed(1) + ' <span class="sub">' + t.peopleM + '</span>') : '—') + '</div></div>' +
+      '<div class="det-item"><div class="det-label">❄️ ' + t.detPolar + '</div><div class="det-value">' + (POLAR[it.code] ? polarTxt : '—') + '</div></div>' +
+      '<div class="det-item"><div class="det-label">💰 ' + t.detCurrency + '</div><div class="det-value">' + cur + '</div></div>' +
+      '<div class="det-item"><div class="det-label">🗺️ ' + t.detZone + '</div><div class="det-value" style="font-size:.8rem">' + it.tz.replace(/_/g, " ") + '</div></div>';
+
+    it.inner.innerHTML = html;
+    it.detailsBuilt = true;
+  }
+
+  function refreshDetails(it) {
+    if (!it.open) return;
+    buildDetails(it);
+  }
+
+  function updateWorldNow() {
+    var now = new Date();
+    var awake = 0, hourBuckets = {};
+
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
+      var localHour = new Date(now.getTime() + it.offMin * 60000).getUTCHours();
+      var pop = POP[it.code] || 0;
+      if (localHour >= 6 && localHour < 22) awake += pop;
+      hourBuckets[localHour] = (hourBuckets[localHour] || 0) + pop;
+    }
+
+    var peakHour = 0, peakPop = 0;
+    for (var h in hourBuckets) {
+      if (hourBuckets[h] > peakPop) { peakPop = hourBuckets[h]; peakHour = parseInt(h, 10); }
+    }
+
+    var mp = moonPhase(now);
+    var polar = polarStateKey(now);
+
+    if ($("wnAwake")) $("wnAwake").innerHTML = fill(t.wnAwake, { p: (awake / 1000).toFixed(1) + "B" });
+    if ($("wnMoon")) $("wnMoon").innerHTML = fill(t.wnMoon, { m: mp.icon + " " + t[mp.key] });
+    if ($("wnActive")) $("wnActive").innerHTML = fill(t.wnActive, { t: (peakHour < 10 ? "0" : "") + peakHour + ":00" });
+    if ($("wnPolar")) $("wnPolar").innerHTML = fill(t.wnPolar, { s: t[polar] });
   }
 
   var myFmt;
@@ -589,17 +950,20 @@
         it.dnEl.textContent = day ? "☀" : "☾";
         it.dnEl.className = "dn " + (day ? "day" : "night");
         it.dnEl.title = day ? t.day : t.night;
+        if (it.open) refreshDetails(it);
       }
     }
     var mt = $("myTime");
     if (mt) mt.textContent = myFmt.format(now);
+    if (slow || forceSlow) updateWorldNow();
   }
 
   var selIdx = -1;
+  var openIdx = -1;
 
   function visibleItems() {
-    var list = items.filter(function (it) { return !it.el.hidden; });
-    list.sort(function (a, b) { return (parseInt(a.el.style.order, 10) || 0) - (parseInt(b.el.style.order, 10) || 0); });
+    var list = items.filter(function (it) { return !it.wrap.hidden; });
+    list.sort(function (a, b) { return (parseInt(a.wrap.style.order, 10) || 0) - (parseInt(b.wrap.style.order, 10) || 0); });
     return list;
   }
   function clearSel() {
@@ -614,6 +978,29 @@
     var el = v[selIdx].el;
     el.classList.add("sel");
     el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  function toggleCard(it) {
+    if (it.open) {
+      it.wrap.classList.remove("open");
+      it.el.classList.remove("sel");
+      it.open = false;
+      if (openIdx === it.code) openIdx = -1;
+    } else {
+      if (openIdx >= 0) {
+        var prev = items.filter(function (x) { return x.code === openIdx; })[0];
+        if (prev) {
+          prev.wrap.classList.remove("open");
+          prev.el.classList.remove("sel");
+          prev.open = false;
+        }
+      }
+      buildDetails(it);
+      it.wrap.classList.add("open");
+      it.el.classList.add("sel");
+      it.open = true;
+      openIdx = it.code;
+    }
   }
 
   var toastEl = null;
@@ -642,7 +1029,13 @@
 
   items.forEach(function (it) {
     it.el.tabIndex = 0;
-    it.el.addEventListener("click", function () { copyRow(it); });
+    it.el.addEventListener("click", function (e) {
+      e.preventDefault();
+      toggleCard(it);
+    });
+    it.el.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); toggleCard(it); }
+    });
   });
 
   function applyView() {
@@ -677,8 +1070,18 @@
     }
 
     var visSet = {};
-    pool.forEach(function (it, idx) { visSet[it.code] = true; it.el.hidden = false; it.el.style.order = idx; });
-    items.forEach(function (it) { if (!visSet[it.code]) { it.el.hidden = true; it.el.style.order = 9999; } });
+    pool.forEach(function (it, idx) {
+      visSet[it.code] = true;
+      it.wrap.hidden = false;
+      it.wrap.style.order = idx;
+    });
+    items.forEach(function (it) {
+      if (!visSet[it.code]) {
+        it.wrap.hidden = true;
+        it.wrap.style.order = 9999;
+        if (it.open) { it.wrap.classList.remove("open"); it.el.classList.remove("sel"); it.open = false; }
+      }
+    });
 
     var shown = pool.length;
     var cEl = $("count");
@@ -794,7 +1197,7 @@
         ' <span class="hint-sep">·</span> ' +
         '<span class="kbd">↑</span><span class="kbd">↓</span> ' + t.hintNav +
         ' <span class="hint-sep">·</span> ' +
-        '<span class="kbd">Enter</span> ' + t.hintCopy +
+        '<span class="kbd">Enter</span> ' + t.hintClick +
         ' <span class="hint-sep">·</span> ' +
         '<span class="kbd">Esc</span> ' + t.hintEsc;
     }
@@ -814,11 +1217,14 @@
       it.search = norm(it.name + " " + it.staticSearch);
       it.tf = new Intl.DateTimeFormat(L.loc, { timeZone: it.tz, hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
       it.df = new Intl.DateTimeFormat(L.loc, { timeZone: it.tz, weekday: "short", day: "numeric", month: "short" });
+      it.detailsBuilt = false;
+      if (it.open) buildDetails(it);
     });
 
     if (FX.loaded) setFxStatus("ok");
     else if (FX.loading) setFxStatus("loading");
     updateFx();
+    updateWorldNow();
 
     try { localStorage.setItem("dunya-saati-lang", code); } catch (e) {}
     tick(true);
@@ -862,6 +1268,15 @@
       var q2 = $("q");
       if (q2 && q2.value) { q2.value = ""; applyView(); toast("✕"); }
       clearSel();
+      if (openIdx >= 0) {
+        var openItem = items.filter(function (x) { return x.code === openIdx; })[0];
+        if (openItem && openItem.open) {
+          openItem.wrap.classList.remove("open");
+          openItem.el.classList.remove("sel");
+          openItem.open = false;
+          openIdx = -1;
+        }
+      }
       if (q2) q2.blur();
       return;
     }
@@ -874,7 +1289,7 @@
     if (e.key === "Enter" && selIdx >= 0) {
       e.preventDefault();
       var v = visibleItems();
-      if (v[selIdx]) copyRow(v[selIdx]);
+      if (v[selIdx]) toggleCard(v[selIdx]);
       return;
     }
   });
