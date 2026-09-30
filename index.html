@@ -192,7 +192,6 @@
 
   #board{display:flex; flex-direction:column; gap:10px}
 
-  /* Kart sarmalayıcı - açılır panel için */
   .card-wrap{display:flex; flex-direction:column; gap:0; transition:gap .2s ease}
 
   .row{
@@ -211,14 +210,12 @@
   .row.sel{border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-soft), 0 8px 24px rgba(34,211,238,.15); background:var(--card-hover)}
   .row.sel::before{opacity:1; width:4px}
 
-  /* Açılmış kart görünümü */
   .card-wrap.open .row{
     border-end-start-radius:0; border-end-end-radius:0;
     border-bottom-color:transparent;
     transform:translateY(0);
   }
 
-  /* 🔍 Detay paneli */
   .details{
     max-height:0; overflow:hidden;
     border-start-start-radius:0; border-start-end-radius:0;
@@ -226,7 +223,7 @@
     background:var(--card); border:1px solid var(--line); border-top:0;
     transition:max-height .3s ease;
   }
-  .card-wrap.open .details{max-height:800px}
+  .card-wrap.open .details{max-height:1600px}
 
   .details-inner{
     padding:14px 16px 16px;
@@ -297,6 +294,40 @@
   }
   .toast::before{content:"✦"; color:var(--accent)}
   .toast.on{opacity:1; transform:translateY(0)}
+
+  .religious-section{
+    grid-column:1 / -1;
+    margin-top:4px;
+    padding:12px 14px;
+    border-radius:12px;
+    background:linear-gradient(135deg, rgba(167,139,250,.08), rgba(34,211,238,.06));
+    border:1px solid rgba(167,139,250,.25);
+  }
+  .religious-title{
+    font-size:.7rem; font-weight:800; color:var(--violet);
+    text-transform:uppercase; letter-spacing:.12em;
+    margin-bottom:8px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .religious-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));
+    gap:8px;
+  }
+  .religious-item{
+    padding:8px 10px; border-radius:8px;
+    background:rgba(15,23,42,.6); border:1px solid rgba(167,139,250,.15);
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .religious-item .rl{
+    font-size:.62rem; font-weight:700; color:var(--violet);
+    text-transform:uppercase; letter-spacing:.08em;
+  }
+  .religious-item .rv{
+    font-size:.85rem; font-weight:700; color:#fff;
+    font-variant-numeric:tabular-nums;
+  }
+  .religious-item .rv.dim{color:var(--muted); font-weight:600; font-size:.72rem}
 
   @media (max-width:560px){
     body{padding:16px 10px 60px}
@@ -484,7 +515,6 @@
 
   var POLAR = { NO:1, SE:1, FI:1, IS:1, RU:1 };
 
-  /* Lat/Lon — gün doğumu/batımı tahmini için */
   var GEO = {
     TR:[39,35], US:[38,-97], GB:[54,-2], DE:[51,10], FR:[46,2], IT:[42,12], ES:[40,-4],
     RU:[60,100], CN:[35,105], JP:[36,138], KR:[37,128], IN:[20,77], PK:[30,70],
@@ -531,6 +561,34 @@
     WS:"WST", TO:"TOP", VU:"VUV", SB:"SBD", GU:"USD", XK:"EUR"
   };
 
+  /* Statik Hindu festival tarihleri 2026 */
+  var HINDU_FESTIVALS = [
+    { name: "Holi", date: "2026-03-04" },
+    { name: "Diwali", date: "2026-11-08" },
+    { name: "Maha Shivaratri", date: "2026-02-15" },
+    { name: "Rama Navami", date: "2026-03-27" },
+    { name: "Raksha Bandhan", date: "2026-08-28" },
+    { name: "Janmashtami", date: "2026-09-04" },
+    { name: "Navratri", date: "2026-10-11" },
+    { name: "Dussehra", date: "2026-10-20" }
+  ];
+
+  /* Statik Uposatha günleri 2026 */
+  var UPOSATHA_2026 = [
+    "2026-01-03","2026-01-11","2026-01-18","2026-01-26",
+    "2026-02-02","2026-02-10","2026-02-16","2026-02-24",
+    "2026-03-03","2026-03-11","2026-03-18","2026-03-26",
+    "2026-04-02","2026-04-10","2026-04-16","2026-04-24",
+    "2026-05-01","2026-05-09","2026-05-16","2026-05-24","2026-05-31",
+    "2026-06-08","2026-06-14","2026-06-22","2026-06-29",
+    "2026-07-07","2026-07-14","2026-07-22","2026-07-29",
+    "2026-08-06","2026-08-13","2026-08-21","2026-08-28",
+    "2026-09-05","2026-09-11","2026-09-19","2026-09-26",
+    "2026-10-04","2026-10-11","2026-10-19","2026-10-26",
+    "2026-11-03","2026-11-09","2026-11-17","2026-11-24",
+    "2026-12-02","2026-12-09","2026-12-17","2026-12-24"
+  ];
+
   var LANGS = {
     tr: { name: "Türkçe", flag: "🇹🇷", loc: "tr-TR", base: "tr", dir: "ltr" },
     en: { name: "English", flag: "🇬🇧", loc: "en-US", base: "en", dir: "ltr" },
@@ -552,7 +610,13 @@
       peopleM: "mn kişi", pct: "%{p}",
       moonNew: "Yeni Ay", moonWaxCres: "Büyüyen Hilal", moonFirstQ: "İlk Dördün", moonWaxGib: "Büyüyen Şişkin", moonFull: "Dolunay", moonWanGib: "Küçülen Şişkin", moonLastQ: "Son Dördün", moonWanCres: "Küçülen Hilal",
       polarMidnight: "Gece Yarısı Güneşi", polarNight: "Kutup Gecesi", polarNormal: "Normal",
-      hintClick: "Detay için karta tıkla" },
+      hintClick: "Detay için karta tıkla",
+      relTitle: "Dini Vakitler", relNoData: "Veri yok", relLoading: "Yükleniyor…",
+      relPrayer: "Namaz Vakitleri", relFajr: "İmsak", relSunrise: "Güneş", relDhuhr: "Öğle", relAsr: "İkindi", relMaghrib: "Akşam", relIsha: "Yatsı",
+      relShabbat: "Şabat", relCandle: "Mum yakma", relHavdalah: "Şabat bitişi",
+      relUposatha: "Uposatha", relUposathaToday: "Bugün Uposatha günü", relUposathaNext: "Sonraki: {d}", relUposathaNone: "Bu hafta yok",
+      relHindu: "Hindu Festivali", relHinduNext: "Sonraki: {n} — {d}", relHinduNone: "Yakında yok"
+    },
     en: { title: "World Clock", sub: "Local time in every country on one page.", yourTime: "Your time", search: "Search", ph: "e.g. Japan, Tokyo", sort: "Sort", byName: "By country name", byTime: "By time (west to east)", sortDiff: "Difference from you (nearest first)", filter: "Filter", fAll: "All", fSame: "Same calendar day", fAhead: "Ahead of me (+)", fBehind: "Behind me (−)", count: "Showing <b>{n}</b> countries (of <b>{t}</b>)", none: "No matching country found.", same: "same time as you", diffAhead: "{d} h ahead", diffBehind: "{d} h behind", day: "Day", night: "Night", langLabel: "Language", hintSearch: "search", hintNav: "navigate", hintCopy: "copy", hintEsc: "clear", fxTitle: "Currency Converter", fxAmount: "Amount", fxFrom: "From", fxTo: "To", fxUpdated: "Updated: {d}", fxLoading: "Loading rates…", fxError: "Could not load rates", fxOffline: "Offline — last known rates", fxRate: "1 {a} = {b} {c}",
       wnAwake: "<b>{p}</b> people awake", wnMoon: "Moon: <b>{m}</b>", wnActive: "Peak hour: <b>{t}</b>", wnPolar: "Polar: <b>{s}</b>",
       detLocalTime: "Local time", detLocalDate: "Date", detOffset: "GMT offset", detDiff: "Diff from you",
@@ -561,7 +625,13 @@
       peopleM: "M people", pct: "{p}%",
       moonNew: "New Moon", moonWaxCres: "Waxing Crescent", moonFirstQ: "First Quarter", moonWaxGib: "Waxing Gibbous", moonFull: "Full Moon", moonWanGib: "Waning Gibbous", moonLastQ: "Last Quarter", moonWanCres: "Waning Crescent",
       polarMidnight: "Midnight Sun", polarNight: "Polar Night", polarNormal: "Normal",
-      hintClick: "Tap card for details" },
+      hintClick: "Tap card for details",
+      relTitle: "Religious Times", relNoData: "No data", relLoading: "Loading…",
+      relPrayer: "Prayer Times", relFajr: "Fajr", relSunrise: "Sunrise", relDhuhr: "Dhuhr", relAsr: "Asr", relMaghrib: "Maghrib", relIsha: "Isha",
+      relShabbat: "Shabbat", relCandle: "Candle lighting", relHavdalah: "Havdalah",
+      relUposatha: "Uposatha", relUposathaToday: "Today is Uposatha", relUposathaNext: "Next: {d}", relUposathaNone: "None this week",
+      relHindu: "Hindu Festival", relHinduNext: "Next: {n} — {d}", relHinduNone: "None soon"
+    },
     ar: { title: "ساعة العالم", sub: "التوقيت المحلي لجميع دول العالم في صفحة واحدة.", yourTime: "توقيتك", search: "ابحث", ph: "مثال: اليابان، طوكيو", sort: "الترتيب", byName: "حسب اسم الدولة", byTime: "حسب الوقت (من الغرب إلى الشرق)", sortDiff: "الفرق عن توقيتك (الأقرب أولاً)", filter: "تصفية", fAll: "الكل", fSame: "في نفس اليوم", fAhead: "متقدم عنك (+)", fBehind: "متأخر عنك (−)", count: "يُعرض <b>{n}</b> بلدًا (من أصل <b>{t}</b>)", none: "لم يتم العثور على أي بلد مطابق.", same: "نفس توقيتك", diffAhead: "متقدم بـ {d}", diffBehind: "متأخر بـ {d}", day: "نهار", night: "ليل", langLabel: "اللغة", hintSearch: "ابحث", hintNav: "تنقّل", hintCopy: "انسخ", hintEsc: "امسح", fxTitle: "محوّل العملات", fxAmount: "المبلغ", fxFrom: "من", fxTo: "إلى", fxUpdated: "آخر تحديث: {d}", fxLoading: "جارٍ تحميل الأسعار…", fxError: "تعذّر تحميل الأسعار", fxOffline: "غير متصل — آخر أسعار معروفة", fxRate: "1 {a} = {b} {c}",
       wnAwake: "<b>{p}</b> مستيقظون", wnMoon: "القمر: <b>{m}</b>", wnActive: "الساعة الأكثر نشاطًا: <b>{t}</b>", wnPolar: "القطب: <b>{s}</b>",
       detLocalTime: "الوقت المحلي", detLocalDate: "التاريخ", detOffset: "غرينتش", detDiff: "الفرق عنك",
@@ -570,7 +640,13 @@
       peopleM: "مليون", pct: "%{p}",
       moonNew: "محاق", moonWaxCres: "هلال متزايد", moonFirstQ: "التربيع الأول", moonWaxGib: "أحدب متزايد", moonFull: "بدر", moonWanGib: "أحدب متناقص", moonLastQ: "التربيع الأخير", moonWanCres: "هلال متناقص",
       polarMidnight: "شمس منتصف الليل", polarNight: "الليل القطبي", polarNormal: "عادي",
-      hintClick: "اضغط للتفاصيل" },
+      hintClick: "اضغط للتفاصيل",
+      relTitle: "الأوقات الدينية", relNoData: "لا توجد بيانات", relLoading: "جارٍ التحميل…",
+      relPrayer: "أوقات الصلاة", relFajr: "الفجر", relSunrise: "الشروق", relDhuhr: "الظهر", relAsr: "العصر", relMaghrib: "المغرب", relIsha: "العشاء",
+      relShabbat: "السبت", relCandle: "إشعال الشموع", relHavdalah: "نهاية السبت",
+      relUposatha: "أوبوساثا", relUposathaToday: "اليوم أوبوساثا", relUposathaNext: "التالي: {d}", relUposathaNone: "لا شيء هذا الأسبوع",
+      relHindu: "مهرجان هندوسي", relHinduNext: "التالي: {n} — {d}", relHinduNone: "لا شيء قريبًا"
+    },
     ru: { title: "Мировое время", sub: "Местное время всех стран на одной странице.", yourTime: "Ваше время", search: "Поиск", ph: "например: Япония, Токио", sort: "Сортировка", byName: "По названию страны", byTime: "По времени (с запада на восток)", sortDiff: "Разница с вами (ближайшие первыми)", filter: "Фильтр", fAll: "Все", fSame: "Тот же день", fAhead: "Впереди вас (+)", fBehind: "Позади вас (−)", count: "Показано: <b>{n}</b> (всего: <b>{t}</b>)", none: "Страна не найдена.", same: "то же время, что у вас", diffAhead: "на {d} впереди", diffBehind: "на {d} позади", day: "День", night: "Ночь", langLabel: "Язык", hintSearch: "поиск", hintNav: "навигация", hintCopy: "копировать", hintEsc: "очистить", fxTitle: "Конвертер валют", fxAmount: "Сумма", fxFrom: "Из", fxTo: "В", fxUpdated: "Обновлено: {d}", fxLoading: "Загрузка курсов…", fxError: "Не удалось загрузить курсы", fxOffline: "Офлайн — последние известные курсы", fxRate: "1 {a} = {b} {c}",
       wnAwake: "<b>{p}</b> бодрствуют", wnMoon: "Луна: <b>{m}</b>", wnActive: "Пиковый час: <b>{t}</b>", wnPolar: "Полюс: <b>{s}</b>",
       detLocalTime: "Местное время", detLocalDate: "Дата", detOffset: "GMT", detDiff: "Разница с вами",
@@ -579,7 +655,13 @@
       peopleM: "млн", pct: "{p}%",
       moonNew: "Новолуние", moonWaxCres: "Растущий серп", moonFirstQ: "Первая четверть", moonWaxGib: "Растущая Луна", moonFull: "Полнолуние", moonWanGib: "Убывающая Луна", moonLastQ: "Последняя четверть", moonWanCres: "Убывающий серп",
       polarMidnight: "Полярный день", polarNight: "Полярная ночь", polarNormal: "Обычно",
-      hintClick: "Нажмите для деталей" },
+      hintClick: "Нажмите для деталей",
+      relTitle: "Религиозные времена", relNoData: "Нет данных", relLoading: "Загрузка…",
+      relPrayer: "Время намаза", relFajr: "Фаджр", relSunrise: "Восход", relDhuhr: "Зухр", relAsr: "Аср", relMaghrib: "Магриб", relIsha: "Иша",
+      relShabbat: "Шаббат", relCandle: "Зажигание свечей", relHavdalah: "Авдала",
+      relUposatha: "Упосатха", relUposathaToday: "Сегодня Упосатха", relUposathaNext: "Следующая: {d}", relUposathaNone: "На этой неделе нет",
+      relHindu: "Индуистский фестиваль", relHinduNext: "Следующий: {n} — {d}", relHinduNone: "Скоро нет"
+    },
     de: { title: "Weltzeituhr", sub: "Die Ortszeit aller Länder auf einer Seite.", yourTime: "Ihre Zeit", search: "Suche", ph: "z. B. Japan, Tokio", sort: "Sortierung", byName: "Nach Ländername", byTime: "Nach Zeit (West nach Ost)", sortDiff: "Nach Abweichung von Ihnen", filter: "Filter", fAll: "Alle", fSame: "Gleicher Kalendertag", fAhead: "Vor Ihnen (+)", fBehind: "Hinter Ihnen (−)", count: "<b>{n}</b> Länder angezeigt (von <b>{t}</b>)", none: "Kein Land gefunden.", same: "gleiche Zeit wie Sie", diffAhead: "{d} Std. voraus", diffBehind: "{d} Std. zurück", day: "Tag", night: "Nacht", langLabel: "Sprache", hintSearch: "suchen", hintNav: "navigieren", hintCopy: "kopieren", hintEsc: "leeren", fxTitle: "Währungsrechner", fxAmount: "Betrag", fxFrom: "Von", fxTo: "Nach", fxUpdated: "Aktualisiert: {d}", fxLoading: "Kurse werden geladen…", fxError: "Kurse konnten nicht geladen werden", fxOffline: "Offline — letzte bekannte Kurse", fxRate: "1 {a} = {b} {c}",
       wnAwake: "<b>{p}</b> Menschen wach", wnMoon: "Mond: <b>{m}</b>", wnActive: "Stoßzeit: <b>{t}</b>", wnPolar: "Polar: <b>{s}</b>",
       detLocalTime: "Ortszeit", detLocalDate: "Datum", detOffset: "GMT", detDiff: "Abw. von Ihnen",
@@ -588,7 +670,13 @@
       peopleM: "Mio.", pct: "{p}%",
       moonNew: "Neumond", moonWaxCres: "Zunehmende Sichel", moonFirstQ: "Erstes Viertel", moonWaxGib: "Zunehmender Mond", moonFull: "Vollmond", moonWanGib: "Abnehmender Mond", moonLastQ: "Letztes Viertel", moonWanCres: "Abnehmende Sichel",
       polarMidnight: "Mitternachtssonne", polarNight: "Polarnacht", polarNormal: "Normal",
-      hintClick: "Für Details tippen" },
+      hintClick: "Für Details tippen",
+      relTitle: "Religiöse Zeiten", relNoData: "Keine Daten", relLoading: "Lädt…",
+      relPrayer: "Gebetszeiten", relFajr: "Fadschr", relSunrise: "Sonnenaufgang", relDhuhr: "Dhuhr", relAsr: "Asr", relMaghrib: "Maghrib", relIsha: "Ischa",
+      relShabbat: "Schabbat", relCandle: "Kerzenzünden", relHavdalah: "Hawdala",
+      relUposatha: "Uposatha", relUposathaToday: "Heute ist Uposatha", relUposathaNext: "Nächste: {d}", relUposathaNone: "Diese Woche keine",
+      relHindu: "Hindu-Festival", relHinduNext: "Nächstes: {n} — {d}", relHinduNone: "Bald keines"
+    },
     zh: { title: "世界时钟", sub: "在一个页面查看所有国家的当地时间。", yourTime: "您的时间", search: "搜索", ph: "例如：日本、东京", sort: "排序", byName: "按国家名称", byTime: "按时间（自西向东）", sortDiff: "与您的时差（由近到远）", filter: "筛选", fAll: "全部", fSame: "同一天内", fAhead: "比您快 (+)", fBehind: "比您慢 (−)", count: "显示 <b>{n}</b> 个国家（共 <b>{t}</b> 个）", none: "未找到匹配的国家。", same: "与您时间相同", diffAhead: "比您快 {d}", diffBehind: "比您慢 {d}", day: "白天", night: "夜晚", langLabel: "语言", hintSearch: "搜索", hintNav: "导航", hintCopy: "复制", hintEsc: "清除", fxTitle: "货币转换器", fxAmount: "金额", fxFrom: "从", fxTo: "到", fxUpdated: "更新于 {d}", fxLoading: "正在加载汇率…", fxError: "无法加载汇率", fxOffline: "离线 — 最后的已知汇率", fxRate: "1 {a} = {b} {c}",
       wnAwake: "<b>{p}</b> 人醒着", wnMoon: "月亮: <b>{m}</b>", wnActive: "高峰时刻: <b>{t}</b>", wnPolar: "极地: <b>{s}</b>",
       detLocalTime: "当地时间", detLocalDate: "日期", detOffset: "GMT", detDiff: "与您的差异",
@@ -597,7 +685,13 @@
       peopleM: "百万", pct: "{p}%",
       moonNew: "新月", moonWaxCres: "娥眉月", moonFirstQ: "上弦月", moonWaxGib: "盈凸月", moonFull: "满月", moonWanGib: "亏凸月", moonLastQ: "下弦月", moonWanCres: "残月",
       polarMidnight: "极昼", polarNight: "极夜", polarNormal: "正常",
-      hintClick: "点击卡片查看详情" },
+      hintClick: "点击卡片查看详情",
+      relTitle: "宗教时间", relNoData: "无数据", relLoading: "加载中…",
+      relPrayer: "礼拜时间", relFajr: "晨礼", relSunrise: "日出", relDhuhr: "晌礼", relAsr: "晡礼", relMaghrib: "昏礼", relIsha: "宵礼",
+      relShabbat: "安息日", relCandle: "点蜡烛", relHavdalah: "安息日结束",
+      relUposatha: "布萨日", relUposathaToday: "今天是布萨日", relUposathaNext: "下次: {d}", relUposathaNone: "本周无",
+      relHindu: "印度教节日", relHinduNext: "下次: {n} — {d}", relHinduNone: "近期无"
+    },
     fr: { title: "Heure mondiale", sub: "L'heure locale de tous les pays sur une seule page.", yourTime: "Votre heure", search: "Rechercher", ph: "ex. Japon, Tokyo", sort: "Tri", byName: "Par nom de pays", byTime: "Par heure (d'ouest en est)", sortDiff: "Par écart avec vous", filter: "Filtre", fAll: "Tous", fSame: "Même jour civil", fAhead: "En avance sur vous (+)", fBehind: "En retard sur vous (−)", count: "<b>{n}</b> pays affichés (sur <b>{t}</b>)", none: "Aucun pays correspondant.", same: "même heure que vous", diffAhead: "{d} h d'avance", diffBehind: "{d} h de retard", day: "Jour", night: "Nuit", langLabel: "Langue", hintSearch: "rechercher", hintNav: "naviguer", hintCopy: "copier", hintEsc: "effacer", fxTitle: "Convertisseur de devises", fxAmount: "Montant", fxFrom: "De", fxTo: "Vers", fxUpdated: "Mis à jour : {d}", fxLoading: "Chargement des taux…", fxError: "Échec du chargement des taux", fxOffline: "Hors ligne — derniers taux connus", fxRate: "1 {a} = {b} {c}",
       wnAwake: "<b>{p}</b> personnes éveillées", wnMoon: "Lune : <b>{m}</b>", wnActive: "Heure de pointe : <b>{t}</b>", wnPolar: "Polaire : <b>{s}</b>",
       detLocalTime: "Heure locale", detLocalDate: "Date", detOffset: "GMT", detDiff: "Écart avec vous",
@@ -606,7 +700,13 @@
       peopleM: "M", pct: "{p} %",
       moonNew: "Nouvelle Lune", moonWaxCres: "Croissant croissant", moonFirstQ: "Premier Quartier", moonWaxGib: "Gibbeuse croissante", moonFull: "Pleine Lune", moonWanGib: "Gibbeuse décroissante", moonLastQ: "Dernier Quartier", moonWanCres: "Croissant décroissant",
       polarMidnight: "Soleil de minuit", polarNight: "Nuit polaire", polarNormal: "Normal",
-      hintClick: "Touchez pour les détails" },
+      hintClick: "Touchez pour les détails",
+      relTitle: "Temps religieux", relNoData: "Aucune donnée", relLoading: "Chargement…",
+      relPrayer: "Heures de prière", relFajr: "Fajr", relSunrise: "Lever", relDhuhr: "Dhuhr", relAsr: "Asr", relMaghrib: "Maghrib", relIsha: "Isha",
+      relShabbat: "Chabbat", relCandle: "Allumage des bougies", relHavdalah: "Havdala",
+      relUposatha: "Uposatha", relUposathaToday: "Aujourd'hui Uposatha", relUposathaNext: "Suivant : {d}", relUposathaNone: "Aucun cette semaine",
+      relHindu: "Festival hindou", relHinduNext: "Suivant : {n} — {d}", relHinduNone: "Aucun bientôt"
+    },
     es: { title: "Hora mundial", sub: "La hora local de todos los países en una sola página.", yourTime: "Su hora", search: "Buscar", ph: "p. ej. Japón, Tokio", sort: "Orden", byName: "Por nombre de país", byTime: "Por hora (de oeste a este)", sortDiff: "Por diferencia con usted", filter: "Filtro", fAll: "Todos", fSame: "Mismo día natural", fAhead: "Por delante de usted (+)", fBehind: "Por detrás de usted (−)", count: "Mostrando <b>{n}</b> países (de <b>{t}</b>)", none: "No se encontró ningún país.", same: "misma hora que usted", diffAhead: "{d} h por delante", diffBehind: "{d} h por detrás", day: "Día", night: "Noche", langLabel: "Idioma", hintSearch: "buscar", hintNav: "navegar", hintCopy: "copiar", hintEsc: "limpiar", fxTitle: "Conversor de divisas", fxAmount: "Cantidad", fxFrom: "De", fxTo: "A", fxUpdated: "Actualizado: {d}", fxLoading: "Cargando tasas…", fxError: "No se pudieron cargar las tasas", fxOffline: "Sin conexión — últimas tasas conocidas", fxRate: "1 {a} = {b} {c}",
       wnAwake: "<b>{p}</b> personas despiertas", wnMoon: "Luna: <b>{m}</b>", wnActive: "Hora pico: <b>{t}</b>", wnPolar: "Polar: <b>{s}</b>",
       detLocalTime: "Hora local", detLocalDate: "Fecha", detOffset: "GMT", detDiff: "Dif. con usted",
@@ -615,7 +715,13 @@
       peopleM: "M", pct: "{p}%",
       moonNew: "Luna Nueva", moonWaxCres: "Luna Creciente", moonFirstQ: "Cuarto Creciente", moonWaxGib: "Gibosa Creciente", moonFull: "Luna Llena", moonWanGib: "Gibosa Menguante", moonLastQ: "Cuarto Menguante", moonWanCres: "Luna Menguante",
       polarMidnight: "Sol de medianoche", polarNight: "Noche polar", polarNormal: "Normal",
-      hintClick: "Toca para detalles" },
+      hintClick: "Toca para detalles",
+      relTitle: "Tiempos religiosos", relNoData: "Sin datos", relLoading: "Cargando…",
+      relPrayer: "Horarios de oración", relFajr: "Fajr", relSunrise: "Amanecer", relDhuhr: "Dhuhr", relAsr: "Asr", relMaghrib: "Maghrib", relIsha: "Isha",
+      relShabbat: "Shabat", relCandle: "Encendido de velas", relHavdalah: "Havdalá",
+      relUposatha: "Uposatha", relUposathaToday: "Hoy es Uposatha", relUposathaNext: "Siguiente: {d}", relUposathaNone: "Ninguno esta semana",
+      relHindu: "Festival hindú", relHinduNext: "Siguiente: {n} — {d}", relHinduNone: "Ninguno pronto"
+    },
     ja: { title: "世界時計", sub: "すべての国の現地時間を1ページで確認できます。", yourTime: "あなたの現地時間", search: "検索", ph: "例：日本、東京", sort: "並べ替え", byName: "国名順", byTime: "時刻順（西から東へ）", sortDiff: "あなたとの時差（近い順）", filter: "フィルター", fAll: "すべて", fSame: "同じ日付", fAhead: "あなたより進んでいる (+)", fBehind: "あなたより遅れている (−)", count: "<b>{n}</b> ヶ国を表示中（全 <b>{t}</b> ヶ国）", none: "該当する国が見つかりません。", same: "あなたと同じ時刻", diffAhead: "{d} 進んでいます", diffBehind: "{d} 遅れています", day: "昼", night: "夜", langLabel: "言語", hintSearch: "検索", hintNav: "移動", hintCopy: "コピー", hintEsc: "クリア", fxTitle: "通貨換算", fxAmount: "金額", fxFrom: "変換元", fxTo: "変換先", fxUpdated: "更新日時: {d}", fxLoading: "レートを読み込み中…", fxError: "レートを読み込めませんでした", fxOffline: "オフライン — 最後に取得したレート", fxRate: "1 {a} = {b} {c}",
       wnAwake: "<b>{p}</b> 人が起きている", wnMoon: "月: <b>{m}</b>", wnActive: "ピーク時間: <b>{t}</b>", wnPolar: "極地: <b>{s}</b>",
       detLocalTime: "現地時間", detLocalDate: "日付", detOffset: "GMT", detDiff: "あなたとの差",
@@ -624,7 +730,13 @@
       peopleM: "百万人", pct: "{p}%",
       moonNew: "新月", moonWaxCres: "三日月", moonFirstQ: "上弦", moonWaxGib: "十三夜月", moonFull: "満月", moonWanGib: "十六夜月", moonLastQ: "下弦", moonWanCres: "有明月",
       polarMidnight: "白夜", polarNight: "極夜", polarNormal: "通常",
-      hintClick: "カードをタップで詳細" }
+      hintClick: "カードをタップで詳細",
+      relTitle: "宗教的な時間", relNoData: "データなし", relLoading: "読み込み中…",
+      relPrayer: "礼拝時間", relFajr: "ファジュル", relSunrise: "日の出", relDhuhr: "ズフル", relAsr: "アスル", relMaghrib: "マグリブ", relIsha: "イシャー",
+      relShabbat: "安息日", relCandle: "ろうそく点火", relHavdalah: "ハヴダーラー",
+      relUposatha: "布薩日", relUposathaToday: "今日は布薩日", relUposathaNext: "次回: {d}", relUposathaNone: "今週はなし",
+      relHindu: "ヒンドゥー祭", relHinduNext: "次回: {n} — {d}", relHinduNone: "近日なし"
+    }
   };
 
   var OVERRIDE = {
@@ -681,7 +793,6 @@
     return { idx: idx, icon: icons[idx], key: keys[idx], phase: phase };
   }
 
-  /* 🌅 Gün doğumu/batımı — NOAA basit hesap (yaklaşık) */
   function sunTimes(lat, lon, date) {
     var d = date || new Date();
     var rad = Math.PI / 180;
@@ -692,7 +803,7 @@
     var cosH = -Math.tan(latRad) * Math.tan(declRad);
     if (cosH > 1) return { polar: "night" };
     if (cosH < -1) return { polar: "midnight" };
-    var H = Math.acos(cosH) / rad; // derece
+    var H = Math.acos(cosH) / rad;
     var solarNoonUTC = 12 - lon / 15;
     var sunriseUTC = solarNoonUTC - H / 15;
     var sunsetUTC  = solarNoonUTC + H / 15;
@@ -704,8 +815,7 @@
       if (h >= 24) h -= 24;
       return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m;
     }
-    var dayLen = 2 * H / 15; // saat
-    return { sunrise: fmt(sunriseUTC), sunset: fmt(sunsetUTC), dayLen: dayLen, polar: null };
+    return { sunrise: fmt(sunriseUTC), sunset: fmt(sunsetUTC), dayLen: 2 * H / 15, polar: null };
   }
 
   function polarStateKey(date) {
@@ -714,6 +824,26 @@
     if (n >= 152 && n <= 243) return "polarMidnight";
     if (n >= 335 || n <= 60) return "polarNight";
     return "polarNormal";
+  }
+
+  var prayerCache = {};
+  function fetchPrayerTimes(countryCode, lat, lon, cb) {
+    var today = new Date().toISOString().slice(0, 10);
+    var key = countryCode + "-" + today;
+    if (prayerCache[key]) { cb(prayerCache[key]); return; }
+    var url = "https://api.aladhan.com/v1/timings/" + today +
+              "?latitude=" + lat + "&longitude=" + lon + "&method=13";
+    var ctrl = ("AbortController" in window) ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
+    fetch(url, ctrl ? { signal: ctrl.signal } : {})
+      .then(function (r) { clearTimeout(timer); return r.json(); })
+      .then(function (data) {
+        if (data && data.data && data.data.timings) {
+          prayerCache[key] = data.data.timings;
+          cb(data.data.timings);
+        } else { cb(null); }
+      })
+      .catch(function () { clearTimeout(timer); cb(null); });
   }
 
   var FX = {
@@ -848,6 +978,67 @@
     return "GMT" + sign + h + (m ? ":" + (m < 10 ? "0" : "") + m : "");
   }
 
+  function buildReligiousSection(it) {
+    var code = it.code;
+    var geo = GEO[code];
+    var now = new Date();
+    if (!geo) return "";
+    var html = '<div class="religious-section">';
+    html += '<div class="religious-title">✨ ' + t.relTitle + '</div>';
+    html += '<div class="religious-grid" id="rel-grid-' + code + '">';
+
+    html += '<div class="religious-item"><div class="rl">🕌 ' + t.relPrayer + '</div><div class="rv dim" id="prayer-' + code + '">' + t.relLoading + '</div></div>';
+
+    html += '<div class="religious-item"><div class="rl">🕯️ ' + t.relShabbat + '</div><div class="rv dim" id="shabbat-' + code + '">' + t.relLoading + '</div></div>';
+
+    var upInfo = getUposathaInfo(now);
+    html += '<div class="religious-item"><div class="rl">☸️ ' + t.relUposatha + '</div><div class="rv dim">' + upInfo + '</div></div>';
+
+    var hInfo = getHinduInfo(now);
+    html += '<div class="religious-item"><div class="rl">🕉️ ' + t.relHindu + '</div><div class="rv dim">' + hInfo + '</div></div>';
+
+    html += '</div></div>';
+    return html;
+  }
+
+  function getUposathaInfo(now) {
+    var todayStr = now.toISOString().slice(0, 10);
+    for (var i = 0; i < UPOSATHA_2026.length; i++) {
+      if (UPOSATHA_2026[i] === todayStr) return t.relUposathaToday;
+    }
+    for (var j = 0; j < UPOSATHA_2026.length; j++) {
+      if (UPOSATHA_2026[j] > todayStr) {
+        var d = UPOSATHA_2026[j];
+        return fill(t.relUposathaNext, { d: d.slice(8) + "." + d.slice(5, 7) });
+      }
+    }
+    return t.relUposathaNone;
+  }
+
+  function getHinduInfo(now) {
+    var todayStr = now.toISOString().slice(0, 10);
+    for (var i = 0; i < HINDU_FESTIVALS.length; i++) {
+      if (HINDU_FESTIVALS[i].date >= todayStr) {
+        var f = HINDU_FESTIVALS[i];
+        return fill(t.relHinduNext, { n: f.name, d: f.date.slice(8) + "." + f.date.slice(5, 7) });
+      }
+    }
+    return t.relHinduNone;
+  }
+
+  function computeShabbat(geo, now) {
+    if (!geo) return null;
+    var st = sunTimes(geo[0], geo[1], now);
+    if (!st || st.polar) return null;
+    var sunsetMin = parseInt(st.sunset.slice(0,2), 10) * 60 + parseInt(st.sunset.slice(3,5), 10);
+    function fmtMin(m) {
+      m = ((m % 1440) + 1440) % 1440;
+      var h = Math.floor(m / 60), mm = m % 60;
+      return (h < 10 ? "0" : "") + h + ":" + (mm < 10 ? "0" : "") + mm;
+    }
+    return { candle: fmtMin(sunsetMin - 18), havdalah: fmtMin(sunsetMin + 42) };
+  }
+
   function buildDetails(it) {
     var now = new Date();
     var localMs = now.getTime() + it.offMin * 60000;
@@ -861,22 +1052,19 @@
 
     var pop = POP[it.code] || 0;
     var isAwake = (localH >= 6 && localH < 22);
-    var awakeCount = isAwake ? pop : 0;
 
     var mp = moonPhase(now);
-
     var geo = GEO[it.code];
     var sunHtml = "";
     if (geo) {
       var st = sunTimes(geo[0], geo[1], now);
       if (st.polar === "night") sunHtml = "—";
-      else if (st.polar === "midnight") sunHtml = "24h " + "☀";
+      else if (st.polar === "midnight") sunHtml = "24h ☀";
       else sunHtml = st.sunrise + " / " + st.sunset;
     } else sunHtml = "—";
 
     var polarKey = polarStateKey(now);
     var polarTxt = t[polarKey];
-
     var cur = CURRENCY[it.code] || "—";
 
     var html =
@@ -892,8 +1080,41 @@
       '<div class="det-item"><div class="det-label">💰 ' + t.detCurrency + '</div><div class="det-value">' + cur + '</div></div>' +
       '<div class="det-item"><div class="det-label">🗺️ ' + t.detZone + '</div><div class="det-value" style="font-size:.8rem">' + it.tz.replace(/_/g, " ") + '</div></div>';
 
+    html += buildReligiousSection(it);
+
     it.inner.innerHTML = html;
     it.detailsBuilt = true;
+
+    if (geo) {
+      var target = it.inner.querySelector("#prayer-" + it.code);
+      if (target) {
+        fetchPrayerTimes(it.code, geo[0], geo[1], function (timings) {
+          if (!target) return;
+          if (!timings) { target.textContent = t.relNoData; return; }
+          var fajr = (timings.Fajr || "—").slice(0, 5);
+          var sunrise = (timings.Sunrise || "—").slice(0, 5);
+          var dhuhr = (timings.Dhuhr || "—").slice(0, 5);
+          var asr = (timings.Asr || "—").slice(0, 5);
+          var maghrib = (timings.Maghrib || "—").slice(0, 5);
+          var isha = (timings.Isha || "—").slice(0, 5);
+          target.innerHTML =
+            '<span style="font-size:.72rem;line-height:1.6">' +
+            '🌙 ' + fajr + ' &nbsp; ☀️ ' + sunrise + ' &nbsp; 🕛 ' + dhuhr + '<br>' +
+            '🌤️ ' + asr + ' &nbsp; 🌆 ' + maghrib + ' &nbsp; 🌃 ' + isha +
+            '</span>';
+          target.classList.remove("dim");
+        });
+      }
+
+      var shabbatTarget = it.inner.querySelector("#shabbat-" + it.code);
+      if (shabbatTarget) {
+        var sh = computeShabbat(geo, now);
+        if (sh) {
+          shabbatTarget.innerHTML = '🕯️ ' + sh.candle + ' &nbsp; ✨ ' + sh.havdalah;
+        } else { shabbatTarget.textContent = "—"; }
+        shabbatTarget.classList.remove("dim");
+      }
+    }
   }
 
   function refreshDetails(it) {
@@ -950,7 +1171,6 @@
         it.dnEl.textContent = day ? "☀" : "☾";
         it.dnEl.className = "dn " + (day ? "day" : "night");
         it.dnEl.title = day ? t.day : t.night;
-        if (it.open) refreshDetails(it);
       }
     }
     var mt = $("myTime");
@@ -1010,21 +1230,6 @@
     toastEl.classList.add("on");
     clearTimeout(toastEl._t);
     toastEl._t = setTimeout(function () { toastEl.classList.remove("on"); }, 1600);
-  }
-
-  function copyRow(it) {
-    var line = it.name + ": " + it.tEl.textContent + " (" + it.dtEl.textContent + ")";
-    function done() { toast(line); }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(line).then(done, function () { legacyCopy(line); done(); });
-    } else { legacyCopy(line); done(); }
-  }
-  function legacyCopy(text) {
-    var ta = document.createElement("textarea");
-    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); } catch (e) {}
-    ta.remove();
   }
 
   items.forEach(function (it) {
