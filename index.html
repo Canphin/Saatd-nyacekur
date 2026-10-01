@@ -1051,7 +1051,7 @@
   }
 
   /* ============================================================
-     🧭 PUSULA (SMOOTHING + ABSOLUTE + webkitCompassHeading)
+     🧭 PUSULA (iOS webkitCompassHeading + Android alpha birleşik)
      ============================================================ */
   var Compass = {
     active: false,
@@ -1059,11 +1059,11 @@
     smoothedHeading: 0,
     hasSmoothed: false,
     qiblaBearing: 0,
-    preferredSource: 'none',
     listener: null,
     eventCount: 0,
     lastUpdate: 0,
     SMOOTHING: 0.04,
+    sourceLabel: 'none',
 
     smooth: function (newHeading) {
       if (!this.hasSmoothed) {
@@ -1083,38 +1083,37 @@
       return this.smoothedHeading;
     },
 
+    // iOS + Android birleşik çıkarım
     extract: function (event) {
-      if (event.webkitCompassHeading != null && !isNaN(event.webkitCompassHeading)) {
-        return { heading: event.webkitCompassHeading, source: 'webkit' };
+      // 1) iOS Safari: webkitCompassHeading (gerçek kuzey)
+      if (typeof event.webkitCompassHeading === "number" &&
+          !isNaN(event.webkitCompassHeading)) {
+        return { heading: event.webkitCompassHeading, source: 'iOS' };
       }
-      if (event.alpha != null && !isNaN(event.alpha)) {
-        var h = (360 - event.alpha) % 360;
-        return { heading: h, source: event.absolute ? 'absolute' : 'relative' };
+      // 2) Android absolute
+      if (event.absolute === true && typeof event.alpha === "number" && !isNaN(event.alpha)) {
+        return { heading: (360 - event.alpha) % 360, source: 'Android(abs)' };
+      }
+      // 3) Android yedek: normal alpha + ekran yönü
+      if (typeof event.alpha === "number" && !isNaN(event.alpha)) {
+        var screenAngle = 0;
+        if (window.screen && window.screen.orientation && typeof window.screen.orientation.angle === "number") {
+          screenAngle = window.screen.orientation.angle;
+        } else if (typeof window.orientation === "number") {
+          screenAngle = window.orientation;
+        }
+        var h = (360 - event.alpha + screenAngle + 360) % 360;
+        return { heading: h, source: 'Android' };
       }
       return null;
     },
 
-    onAbsolute: function (event) {
-      var self = Compass;
-      var r = self.extract(event);
+    onOrientation: function (event) {
+      var r = Compass.extract(event);
       if (!r) return;
-      if (self.preferredSource !== 'absolute' && self.preferredSource !== 'webkit') {
-        self.preferredSource = 'absolute';
-        self.logToUI('Absolute sensör aktif', 'ok');
-      }
-      self.handle(r.heading);
-    },
-
-    onRegular: function (event) {
-      var self = Compass;
-      if (self.preferredSource === 'absolute' || self.preferredSource === 'webkit') return;
-      var r = self.extract(event);
-      if (!r) return;
-      if (self.preferredSource === 'none') {
-        self.preferredSource = r.source;
-        self.logToUI('Göreceli sensör: ' + r.source, 'warn');
-      }
-      self.handle(r.heading);
+      Compass.sourceLabel = r.source;
+      var norm = ((r.heading % 360) + 360) % 360;
+      Compass.handle(norm);
     },
 
     handle: function (raw) {
@@ -1126,14 +1125,14 @@
         if (el) {
           var ln = document.createElement('div');
           ln.className = 'ln ok';
-          ln.textContent = '[' + new Date().toLocaleTimeString('tr-TR', { hour12: false }) + '] Pusula aktif — ' + this.preferredSource;
+          ln.textContent = '[' + new Date().toLocaleTimeString('tr-TR', { hour12: false }) + '] Pusula aktif — ' + this.sourceLabel;
           el.appendChild(ln);
           el.classList.add('show');
         }
       }
       this.deviceHeading = this.smooth(raw);
       var now = performance.now();
-      if (now - this.lastUpdate < 50) return;
+      if (now - this.lastUpdate < 40) return;
       this.lastUpdate = now;
       this.render();
     },
@@ -1151,7 +1150,8 @@
 
     render: function () {
       var section = document.querySelector('.qibla-section');
-      if (!section || section.getAttribute('data-active-code') !== String(openIdx || '')) return;
+      if (!section) return;
+      if (section.getAttribute('data-active-code') !== String(openIdx || '')) return;
 
       var body = section.querySelector('.compass-body');
       var needle = section.querySelector('.qibla-needle');
@@ -1191,16 +1191,15 @@
       this.qiblaBearing = qiblaBearing(geo[0], geo[1]);
       this.hasSmoothed = false;
       this.eventCount = 0;
-      this.preferredSource = 'none';
+      this.sourceLabel = 'none';
 
-      // iOS izni
+      // iOS 13+ izin
       if (typeof DeviceOrientationEvent !== 'undefined' &&
           typeof DeviceOrientationEvent.requestPermission === 'function') {
         DeviceOrientationEvent.requestPermission()
           .then(function (resp) {
             if (resp === 'granted') {
               self.bind();
-              self.preferredSource = 'webkit';
               self.logToUI('iOS izni verildi', 'ok');
             } else {
               self.logToUI('iOS izni reddedildi — Ayarlar > Safari > Hareket ve Yönelim', 'err');
@@ -1213,25 +1212,23 @@
           });
       } else {
         this.bind();
-        this.logToUI('Sensör dinleniyor (absolute öncelikli)', 'ok');
+        this.logToUI('Sensör dinleniyor', 'ok');
       }
     },
 
     bind: function () {
-      this.listener = function (e) { Compass.onAbsolute(e); };
+      var self = this;
+      this.listener = function (e) { self.onOrientation(e); };
+      // İki olayı da dinle — iOS webkitCompassHeading, Android alpha
       window.addEventListener("deviceorientationabsolute", this.listener, true);
-      this.relativeListener = function (e) { Compass.onRegular(e); };
-      window.addEventListener("deviceorientation", this.relativeListener, true);
+      window.addEventListener("deviceorientation", this.listener, true);
     },
 
     stop: function () {
       if (this.listener) {
         window.removeEventListener("deviceorientationabsolute", this.listener, true);
+        window.removeEventListener("deviceorientation", this.listener, true);
         this.listener = null;
-      }
-      if (this.relativeListener) {
-        window.removeEventListener("deviceorientation", this.relativeListener, true);
-        this.relativeListener = null;
       }
       this.active = false;
     },
@@ -1417,7 +1414,6 @@
     html += '<div class="compass">';
     html += '<div class="compass-inner"></div>';
     html += '<div class="compass-body">';
-    /* 12 çentik */
     for (var i = 0; i < 12; i++) {
       var deg = i * 30;
       var cls = (i % 3 === 0) ? 'tick major' : 'tick';
@@ -1991,4 +1987,3 @@
 </script>
 </body>
 </html>
-```
